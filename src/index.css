@@ -55,11 +55,7 @@ body {
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  width: 100%;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -108,4 +104,54 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.pulsing-dot {
+  width: 16px;
+  height: 16px;
+  background: var(--dot-color, white);
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 rgba(46, 130, 36, 0.6);
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--dot-shadow, rgba(255, 255, 255, 0.6));
+  }
+  70% {
+    box-shadow: 0 0 0 var(--dot-spread, 50px) var(--dot-shadow-end, rgba(255, 255, 255, 0));
+  }
+  100% {
+    box-shadow: 0 0 0 0 var(--dot-shadow-end, rgba(255, 255, 255, 0));
+  }
+}
+
+
+
+.indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #a90000; /* gray */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.indicator-dot.met {
+  background: #22c55e; /* green */
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+.indicator-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+  margin: 4px 0;
+  transition: color 0.3s ease;
 }
