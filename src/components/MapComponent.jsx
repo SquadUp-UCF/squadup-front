@@ -50,9 +50,9 @@ export default function MapComponent() {
   const hasCenteredOnUser = useRef(false);
 
   useEffect(() => {
-    fetch(`${API}/locations`)
-      .then((res) => res.json())
-      .then((data) => setLocations(data))
+    fetch(`${API}/api/locations`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data) => setLocations(Array.isArray(data) ? data : []))
       .catch((err) => console.error('Error loading locations:', err));
   }, []);
 
