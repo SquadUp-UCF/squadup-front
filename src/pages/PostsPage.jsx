@@ -103,7 +103,7 @@ function PostsPage() {
                 "--dot-spread": "8px",
               }}
             />
-            LIVE
+            LIVE - UCF verified only
           </span>
           <h1
             style={{
