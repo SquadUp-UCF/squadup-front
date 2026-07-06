@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { statusMeta, formatWhen, activeCount, isLive } from '../utils/games';
+import { SportIcon } from './SportIcons';
+import { MdNearMe } from 'react-icons/md';
 
 const userLocationIcon = L.divIcon({
   className: "",
@@ -10,15 +14,85 @@ const userLocationIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
-const API = import.meta.env.VITE_API_URL;
+// Minimal circular marker: the sport's line icon on a clean white chip, with a
+// blinking red "live" badge when the game is underway.
+function gameMarkerIcon(game) {
+  const live = isLive(game);
+  const iconSvg = renderToStaticMarkup(
+    <SportIcon sport={game.sport} size={20} color="#111827" />
+  );
+  return L.divIcon({
+    className: '',
+    html: `
+      <div class="game-marker-min">
+        <div class="game-marker-min-chip">${iconSvg}</div>
+        ${live ? '<span class="game-marker-live" title="Live now"></span>' : ''}
+      </div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -18],
+  });
+}
+
+// The card shown when a marker is clicked — mirrors the feed's game card.
+function GamePopupCard({ game }) {
+  const meta = statusMeta(game);
+  const live = isLive(game);
+  return (
+    <div style={{ minWidth: 200, fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 16, textTransform: 'capitalize', color: '#1A1A1A' }}>
+          <SportIcon sport={game.sport} size={18} color="#111827" />
+          {game.sport}
+        </strong>
+        {live ? (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              background: '#FDE6E6',
+              color: '#C81E1E',
+              padding: '2px 8px',
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            <span className="game-marker-live" style={{ position: 'static', width: 8, height: 8, border: 'none' }} />
+            LIVE
+          </span>
+        ) : (
+          <span style={{ background: meta.bg, color: meta.color, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
+            {meta.label}
+          </span>
+        )}
+      </div>
+
+      {game.description && (
+        <p style={{ margin: '6px 0 0', color: '#555', fontSize: 13, lineHeight: 1.4 }}>
+          {game.description}
+        </p>
+      )}
+
+      <div style={{ marginTop: 8, fontSize: 13, color: '#444', display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <span>📍 {game.location}</span>
+        <span>{formatWhen(game.start_time)}</span>
+        <span>{activeCount(game)} / {game.max_players} players</span>
+      </div>
+    </div>
+  );
+}
+
 const defaultPosition = [51.505, -0.09];
 
-const RANGE_OPTIONS = [
-  { label: "1 mi", value: 1 },
-  { label: "3 mi", value: 3 },
-  { label: "5 mi", value: 5 },
-  { label: "10 mi", value: 10 },
-];
+// The range slider maps a viewing radius (miles) to a zoom level: a wider range
+// zooms out, a tighter range zooms in. Base 16 makes 5 mi land on zoom 14.
+function zoomForRadius(radiusMiles) {
+  return Math.max(10, Math.min(16, Math.round(16 - Math.log2(radiusMiles))));
+}
+const DEFAULT_RADIUS = 5;
+const DEFAULT_ZOOM = zoomForRadius(DEFAULT_RADIUS); // 14
 
 // Roughly converts a mile radius into a lat/lng bounding box around a center point
 function getBoundsForRadius(center, radiusMiles) {
@@ -41,39 +115,28 @@ function MapRefSetter({ mapRef }) {
   return null;
 }
 
-export default function MapComponent() {
-  const [locations, setLocations] = useState([]);
-  const [userPosition, setUserPosition] = useState(null);
-  const [locationError, setLocationError] = useState("");
-  const [radiusMiles, setRadiusMiles] = useState(5);
+/**
+ * Renders the discovery map. Games are passed in from the parent (PostsPage) so
+ * the list and the map always show the same data. Each game with valid
+ * coordinates becomes a marker.
+ */
+export default function MapComponent({
+  games = [],
+  height = '500px',
+  userPosition = null,
+  radiusMiles = DEFAULT_RADIUS,
+  onRadiusChange,
+}) {
   const mapRef = useRef(null);
   const hasCenteredOnUser = useRef(false);
-
-  useEffect(() => {
-    fetch(`${API}/api/locations`)
-      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
-      .then((data) => setLocations(Array.isArray(data) ? data : []))
-      .catch((err) => console.error('Error loading locations:', err));
-  }, []);
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setUserPosition([pos.coords.latitude, pos.coords.longitude]),
-      (err) => setLocationError(err.message)
-    );
-  }, []);
 
   // Once we have both the map instance AND the user's position, snap to it (one time)
   useEffect(() => {
     if (userPosition && mapRef.current && !hasCenteredOnUser.current) {
-      mapRef.current.setView(userPosition, 13);
+      mapRef.current.setView(userPosition, zoomForRadius(radiusMiles));
       hasCenteredOnUser.current = true;
     }
-  }, [userPosition]);
+  }, [userPosition, radiusMiles]);
 
   // Keep the map's bounds locked to the chosen radius around the user
   useEffect(() => {
@@ -86,25 +149,39 @@ export default function MapComponent() {
 
   function handleRecenter() {
     if (mapRef.current && userPosition) {
-      mapRef.current.setView(userPosition, 13);
+      mapRef.current.setView(userPosition, zoomForRadius(radiusMiles));
     }
   }
 
-  return (
-    <div style={{ height: '500px', width: '100%', position: 'relative' }}>
-      {locationError && <p style={{ color: 'red' }}>{locationError}</p>}
+  // Slider drives both the pannable range (maxBounds, via the effect above) and
+  // the zoom level: wider range → zoom out, tighter range → zoom in.
+  function handleRangeChange(e) {
+    const r = Number(e.target.value);
+    onRadiusChange?.(r);
+    if (mapRef.current) {
+      mapRef.current.setZoom(zoomForRadius(r));
+    }
+  }
 
+  const gamesWithCoords = games.filter(
+    (g) => typeof g.latitude === 'number' && typeof g.longitude === 'number'
+  );
+
+  return (
+    <div style={{ height, width: '100%', position: 'relative' }}>
       <MapContainer
         center={defaultPosition}
-        zoom={13}
-        minZoom={11}
+        zoom={DEFAULT_ZOOM}
+        minZoom={9}
+        zoomControl={false}
         scrollWheelZoom={true}
         maxBoundsViscosity={1.0}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', borderRadius: 16 }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
+          subdomains="abcd"
         />
 
         <MapRefSetter mapRef={mapRef} />
@@ -115,40 +192,71 @@ export default function MapComponent() {
           </Marker>
         )}
 
-        {locations.map((loc) => (
-          <Marker key={loc.id} position={[loc.lat, loc.lng]}>
+        {gamesWithCoords.map((game) => (
+          <Marker key={game._id} position={[game.latitude, game.longitude]} icon={gameMarkerIcon(game)}>
             <Popup>
-              <strong>{loc.name}</strong> <br /> {loc.description}
+              <GamePopupCard game={game} />
             </Popup>
           </Marker>
         ))}
       </MapContainer>
 
-      {/* Overlay controls, sitting on top of the map */}
+      {/* Recenter — a single navigation-arrow button */}
+      <button
+        onClick={handleRecenter}
+        title="Recenter on my location"
+        aria-label="Recenter on my location"
+        style={{
+          position: 'absolute',
+          top: 12,
+          right: 12,
+          zIndex: 1000,
+          width: 42,
+          height: 42,
+          borderRadius: '50%',
+          border: 'none',
+          background: '#FFFFFF',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+        }}
+      >
+        <MdNearMe size={20} color="#1F6B3E" />
+      </button>
+
+      {/* Range slider — controls how far you can see (and the zoom) */}
       <div
         style={{
           position: 'absolute',
-          top: 10,
-          right: 10,
+          left: 12,
+          bottom: 20,
           zIndex: 1000,
+          background: '#FFFFFF',
+          borderRadius: 14,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
+          padding: '10px 14px',
           display: 'flex',
-          gap: 8,
+          alignItems: 'center',
+          gap: 12,
         }}
       >
-
-        <button
-          onClick={handleRecenter}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 6,
-            border: '1px solid black',
-            background: 'rgba(255, 255, 255, 0.6)',
-            color: 'black',
-            cursor: 'pointer',
-          }}
-        >
-          Recenter
-        </button>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#1F6B3E', letterSpacing: 0.3 }}>
+          RANGE
+        </span>
+        <input
+          className="map-range"
+          type="range"
+          min={1}
+          max={25}
+          step={1}
+          value={radiusMiles}
+          onChange={handleRangeChange}
+        />
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', minWidth: 44, textAlign: 'right' }}>
+          {radiusMiles} mi
+        </span>
       </div>
     </div>
   );
