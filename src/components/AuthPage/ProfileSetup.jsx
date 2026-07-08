@@ -42,12 +42,14 @@ function ProfileSetup({ username, sport, pfpFile, onUsernameChange, onSportChang
           `${API}/users/username-available?username=${encodeURIComponent(name)}`,
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
+        if (!res.ok) { setAvailability(null); return; }
         const data = await res.json();
-        setAvailability(data.available ? "available" : "taken");
+        setAvailability(data.available === true ? "available" : "taken");
       } catch {
         setAvailability(null);
       }
     }, 400);
+
 
     return () => clearTimeout(t); // cancels the stale check when they keep typing
   }, [username]);
