@@ -7,6 +7,7 @@
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import "./LocationPicker.css";
 import L from 'leaflet';
 
 const DEFAULT_CENTER = [28.6024, -81.2001]; // UCF
@@ -64,13 +65,13 @@ export default function LocationPicker({ userPosition, value, onPick }) {
   const center = value || userPosition || DEFAULT_CENTER;
 
   return (
-    <div style={{ position: 'relative' }}>
-      <div style={{ height: 220, width: '100%', borderRadius: 12, overflow: 'hidden' }}>
+    <div className="lp-container">
+      <div className="lp-map-frame">
         <MapContainer
           center={center}
           zoom={15}
           scrollWheelZoom={true}
-          style={{ height: '100%', width: '100%' }}
+          className="lp-map"
         >
           <TileLayer
             attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
@@ -102,20 +103,7 @@ export default function LocationPicker({ userPosition, value, onPick }) {
         <button
           type="button"
           onClick={() => recenterRef.current && recenterRef.current()}
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 1000,
-            padding: '6px 10px',
-            borderRadius: 8,
-            border: '1px solid #D6E4D6',
-            background: 'rgba(255,255,255,0.9)',
-            fontSize: 12,
-            fontWeight: 600,
-            color: '#1F6B3E',
-            cursor: 'pointer',
-          }}
+          className="lp-recenter-btn"
         >
           My location
         </button>

@@ -1,0 +1,45 @@
+/* ============================================================================
+   Squad-Up — Email verification step
+   Segmented one-time-code input. Sits on top of the shared shell (AuthShell.css).
+   ========================================================================== */
+
+.otp-boxes {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.otp-box {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: "Outfit", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--su-text);
+  background: var(--su-surface);
+  border: 1.5px solid var(--su-border);
+  border-radius: 12px;
+  outline: none;
+  caret-color: var(--su-green);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.otp-box:focus {
+  background: #ffffff;
+  border-color: var(--su-green);
+  box-shadow: 0 0 0 3px rgba(27, 122, 50, 0.12);
+}
+
+/* Dim the resend button while the 60s cooldown is counting down. */
+.su-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.su-toggle-btn:disabled:hover {
+  opacity: 0.5;
+}

@@ -2,10 +2,16 @@ import { useEffect, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import "./MapComponent.css";
 import L from 'leaflet';
-import { statusMeta, formatWhen, activeCount, isLive } from '../utils/games';
-import { SportIcon } from './SportIcons';
+import { statusMeta, formatWhen, activeCount, isLive } from '../../utils/games';
+import { SportIcon } from '../SportIcons';
 import { MdNearMe } from 'react-icons/md';
+import { FiMapPin, FiClock, FiUsers } from 'react-icons/fi';
+
+function sportLabel(sport) {
+  return String(sport || '').replace(/-/g, ' ');
+}
 
 const userLocationIcon = L.divIcon({
   className: "",
@@ -34,51 +40,114 @@ function gameMarkerIcon(game) {
   });
 }
 
-// The card shown when a marker is clicked — mirrors the feed's game card.
-function GamePopupCard({ game }) {
+// The card shown when a marker is clicked — a compact mirror of the feed's game
+// card so a pin instantly reads as the same object seen in the list.
+function GamePopupCard({ game, currentUserId, onJoin, joiningId }) {
   const meta = statusMeta(game);
   const live = isLive(game);
+  const joined = activeCount(game);
+  const ratio = game.max_players > 0 ? Math.min(1, joined / game.max_players) : 0;
+  const barColor = ratio >= 0.8 ? '#E4572E' : '#2F8F4E';
+
+  const isHost = currentUserId && game.host === currentUserId;
+  const alreadyIn = (game.participants || []).some(
+    (p) => p.user === currentUserId && p.status === 'joined'
+  );
+  const joinable =
+    !isHost && !alreadyIn && game.status !== 'locked' &&
+    game.status !== 'completed' && game.status !== 'cancelled';
+  const joining = joiningId === game._id;
+
   return (
-    <div style={{ minWidth: 200, fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 16, textTransform: 'capitalize', color: '#1A1A1A' }}>
-          <SportIcon sport={game.sport} size={18} color="#111827" />
-          {game.sport}
-        </strong>
-        {live ? (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 5,
-              background: '#FDE6E6',
-              color: '#C81E1E',
-              padding: '2px 8px',
-              borderRadius: 20,
-              fontSize: 11,
-              fontWeight: 700,
-            }}
-          >
-            <span className="game-marker-live" style={{ position: 'static', width: 8, height: 8, border: 'none' }} />
-            LIVE
-          </span>
-        ) : (
-          <span style={{ background: meta.bg, color: meta.color, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>
-            {meta.label}
-          </span>
-        )}
+    <div className="map-popup-card">
+      {/* Green gradient header with a centered sport icon — echoes the card's
+          image/placeholder banner. Status/live badge floats top-left. */}
+      <div className="map-popup-header">
+        <SportIcon sport={game.sport} size={38} color="rgba(255,255,255,0.92)" />
+        <div className="map-popup-badge-wrap">
+          {live ? (
+            <span className="map-popup-live-badge">
+              <span className="game-marker-live" style={{ position: 'static', width: 7, height: 7, border: 'none' }} />
+              LIVE
+            </span>
+          ) : (
+            <span
+              className="map-popup-status-badge"
+              style={{
+                background: meta.bg,
+                color: meta.color,
+              }}
+            >
+              {meta.label}
+            </span>
+          )}
+        </div>
       </div>
 
-      {game.description && (
-        <p style={{ margin: '6px 0 0', color: '#555', fontSize: 13, lineHeight: 1.4 }}>
-          {game.description}
-        </p>
-      )}
+      {/* Body */}
+      <div className="map-popup-body">
+        {/* Sport category pill — same chip as the feed card */}
+        <span
+          className="map-popup-sport-pill"
+          style={{
+            background: meta.bg,
+            color: meta.color,
+          }}
+        >
+          <SportIcon sport={game.sport} size={14} color={meta.color} />
+          {sportLabel(game.sport)}
+        </span>
 
-      <div style={{ marginTop: 8, fontSize: 13, color: '#444', display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <span>📍 {game.location}</span>
-        <span>{formatWhen(game.start_time)}</span>
-        <span>{activeCount(game)} / {game.max_players} players</span>
+        {/* Location as the prominent heading */}
+        <h3 className="map-popup-location">
+          <FiMapPin size={16} color="#2F8F4E" className="map-popup-icon" />
+          {game.location}
+        </h3>
+
+        {/* Icon + text rows */}
+        <div className="map-popup-rows">
+          <span className="map-popup-row">
+            <FiClock size={14} color="#6B7280" className="map-popup-icon" />
+            {formatWhen(game.start_time)}
+          </span>
+          <span className="map-popup-row-players">
+            <FiUsers size={14} color="#6B7280" className="map-popup-icon" />
+            {joined} / {game.max_players} players
+          </span>
+        </div>
+
+        {/* Join-progress bar — mirrors the feed card */}
+        <div className="map-popup-progress">
+          <div
+            className="map-popup-progress-fill"
+            style={{
+              width: `${ratio * 100}%`,
+              background: barColor,
+            }}
+          />
+        </div>
+
+        {/* Primary CTA */}
+        {!isHost && onJoin && (
+          <button
+            disabled={!joinable || joining}
+            onClick={() => onJoin(game)}
+            className="game-popup-cta map-popup-cta"
+            style={{
+              background: joinable ? '#2F8F4E' : '#E4E4E4',
+              color: joinable ? '#FFFFFF' : '#999',
+              cursor: joinable ? 'pointer' : 'default',
+            }}
+          >
+            {alreadyIn
+              ? "You're in"
+              : game.status === 'locked'
+                ? 'Full'
+                : joining
+                  ? 'Joining…'
+                  : <>Join <span className="map-popup-arrow">→</span></>}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -126,6 +195,9 @@ export default function MapComponent({
   userPosition = null,
   radiusMiles = DEFAULT_RADIUS,
   onRadiusChange,
+  currentUserId,
+  onJoin,
+  joiningId,
 }) {
   const mapRef = useRef(null);
   const hasCenteredOnUser = useRef(false);
@@ -168,7 +240,7 @@ export default function MapComponent({
   );
 
   return (
-    <div style={{ height, width: '100%', position: 'relative' }}>
+    <div className="map-container-wrap" style={{ height }}>
       <MapContainer
         center={defaultPosition}
         zoom={DEFAULT_ZOOM}
@@ -176,7 +248,7 @@ export default function MapComponent({
         zoomControl={false}
         scrollWheelZoom={true}
         maxBoundsViscosity={1.0}
-        style={{ height: '100%', width: '100%', borderRadius: 16 }}
+        className="map-leaflet"
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
@@ -194,8 +266,13 @@ export default function MapComponent({
 
         {gamesWithCoords.map((game) => (
           <Marker key={game._id} position={[game.latitude, game.longitude]} icon={gameMarkerIcon(game)}>
-            <Popup>
-              <GamePopupCard game={game} />
+            <Popup className="game-popup" closeButton minWidth={244} maxWidth={244}>
+              <GamePopupCard
+                game={game}
+                currentUserId={currentUserId}
+                onJoin={onJoin}
+                joiningId={joiningId}
+              />
             </Popup>
           </Marker>
         ))}
@@ -206,43 +283,14 @@ export default function MapComponent({
         onClick={handleRecenter}
         title="Recenter on my location"
         aria-label="Recenter on my location"
-        style={{
-          position: 'absolute',
-          top: 12,
-          right: 12,
-          zIndex: 1000,
-          width: 42,
-          height: 42,
-          borderRadius: '50%',
-          border: 'none',
-          background: '#FFFFFF',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-        }}
+        className="map-recenter-btn"
       >
         <MdNearMe size={20} color="#1F6B3E" />
       </button>
 
       {/* Range slider — controls how far you can see (and the zoom) */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 12,
-          bottom: 20,
-          zIndex: 1000,
-          background: '#FFFFFF',
-          borderRadius: 14,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
-          padding: '10px 14px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#1F6B3E', letterSpacing: 0.3 }}>
+      <div className="map-range-panel">
+        <span className="map-range-label">
           RANGE
         </span>
         <input
@@ -254,7 +302,7 @@ export default function MapComponent({
           value={radiusMiles}
           onChange={handleRangeChange}
         />
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', minWidth: 44, textAlign: 'right' }}>
+        <span className="map-range-value">
           {radiusMiles} mi
         </span>
       </div>

@@ -1,0 +1,70 @@
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 2100;
+}
+
+.cm-dialog {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+.cm-title {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: #1A1A1A;
+}
+
+.cm-message {
+  margin: 0 0 24px;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cm-btn {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 0;
+  cursor: pointer;
+}
+
+.cm-btn:disabled {
+  cursor: default;
+}
+
+.cm-btn-cancel {
+  background: #F1F1F1;
+  color: #333;
+  font-weight: 600;
+}
+
+.cm-btn-confirm {
+  background: #2F8F4E;
+  color: #FFFFFF;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.cm-btn-confirm.cm-btn--danger {
+  background: #C81E1E;
+}
+
+.cm-btn-confirm:disabled {
+  opacity: 0.7;
+}

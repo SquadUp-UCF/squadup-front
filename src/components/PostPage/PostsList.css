@@ -1,0 +1,188 @@
+/* Styles for PostsList.jsx — game feed cards. */
+
+.pl-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Image / placeholder header (background is data-driven and stays inline) */
+.pl-card-header {
+  position: relative;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-badges {
+  position: absolute;
+  top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.pl-badges-left {
+  left: 12px;
+}
+
+.pl-badges-right {
+  right: 12px;
+}
+
+.pl-live-dot {
+  position: static;
+  width: 7px;
+  height: 7px;
+  border: none;
+}
+
+.pl-body {
+  padding: 18px;
+}
+
+/* Sport pill (bg/color come from statusMeta and stay inline) */
+.pl-sport-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.pl-title {
+  margin: 12px 0 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1A1A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pl-title-pin {
+  flex-shrink: 0;
+}
+
+.pl-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.pl-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pl-meta-count {
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.pl-bar-track {
+  height: 8px;
+  border-radius: 6px;
+  background: #EDEDED;
+  overflow: hidden;
+}
+
+/* Fill width and color are data-driven and stay inline */
+.pl-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.pl-join {
+  width: 100%;
+  margin-top: 16px;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 0;
+  font-weight: 600;
+}
+
+.pl-join--enabled {
+  background: #2F8F4E;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.pl-join--disabled {
+  background: #E4E4E4;
+  color: #999;
+  cursor: default;
+}
+
+/* Badge (bg/color are props and stay inline) */
+.pl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.pl-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pl-icon-btn--disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.pl-status {
+  color: #555;
+}
+
+.pl-error {
+  color: #A81B1B;
+}
+
+.pl-empty {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  color: #555;
+}
+
+.pl-empty-title {
+  margin: 0;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.pl-empty-sub {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.pl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
