@@ -89,7 +89,9 @@ function ProfileSetup({ username, sport, pfpFile, onUsernameChange, onSportChang
             />
 
 
-              {username.trim().length >= 3 && (
+              {/* Only render once we have a real status — a null/error state
+                  must not show a misleading red dot with no label. */}
+              {username.trim().length >= 3 && availability && (
                 <div className="indicator-row">
                   <span className={`indicator-dot ${availability === "available" ? "met" : ""}`} />
                   {availability === "checking"  ? "Checking…"
