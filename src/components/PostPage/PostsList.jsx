@@ -4,9 +4,10 @@
  * props so the parent (PostsPage) owns the data and list + map stay in sync.
  */
 import { useState } from "react";
+import "./PostsList.css";
 import { FiMapPin, FiClock, FiUsers, FiHeart, FiEdit2, FiTrash2 } from "react-icons/fi";
-import { SportIcon } from "./SportIcons";
-import { statusMeta, formatWhen, activeCount, isLive } from "../utils/games";
+import { SportIcon } from "../SportIcons";
+import { statusMeta, formatWhen, activeCount, isLive } from "../../utils/games";
 
 // A game created within this window shows a "NEW" badge.
 const NEW_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -35,25 +36,14 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
     game.status !== "completed" && game.status !== "cancelled";
 
   return (
-    <div
-      style={{
-        background: "#FFFFFF",
-        borderRadius: 18,
-        overflow: "hidden",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-      }}
-    >
+    <div className="pl-card">
       {/* Image / placeholder header */}
       <div
+        className="pl-card-header"
         style={{
-          position: "relative",
-          height: 150,
           background: game.photo_url
             ? `center/cover no-repeat url(${game.photo_url})`
             : "linear-gradient(135deg, #2F8F4E 0%, #1F6B3E 100%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         {!game.photo_url && (
@@ -61,10 +51,10 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
         )}
 
         {/* Top-left badges */}
-        <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 8 }}>
+        <div className="pl-badges pl-badges-left">
           {live ? (
             <Badge bg="#FDE6E6" color="#C81E1E">
-              <span className="game-marker-live" style={{ position: "static", width: 7, height: 7, border: "none" }} />
+              <span className="game-marker-live pl-live-dot" />
               LIVE
             </Badge>
           ) : (
@@ -74,7 +64,7 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
         </div>
 
         {/* Top-right actions */}
-        <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 8 }}>
+        <div className="pl-badges pl-badges-right">
           {isHost ? (
             <>
               <IconButton title="Edit" onClick={() => onEdit(game)}>
@@ -97,67 +87,36 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
       </div>
 
       {/* Body */}
-      <div style={{ padding: 18 }}>
+      <div className="pl-body">
         <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            background: meta.bg,
-            color: meta.color,
-            padding: "5px 12px",
-            borderRadius: 20,
-            fontSize: 13,
-            fontWeight: 600,
-            textTransform: "capitalize",
-          }}
+          className="pl-sport-pill"
+          style={{ background: meta.bg, color: meta.color }}
         >
           <SportIcon sport={game.sport} size={16} color={meta.color} />
           {sportLabel(game.sport)}
         </span>
 
-        <h3
-          style={{
-            margin: "12px 0 10px",
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#1A1A1A",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <FiMapPin size={18} color="#2F8F4E" style={{ flexShrink: 0 }} />
+        <h3 className="pl-title">
+          <FiMapPin size={18} color="#2F8F4E" className="pl-title-pin" />
           {game.location}
         </h3>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            color: "#555",
-            fontSize: 14,
-            marginBottom: 14,
-          }}
-        >
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <div className="pl-meta-row">
+          <span className="pl-meta-item">
             <FiClock size={15} /> {formatWhen(game.start_time)}
           </span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#1A1A1A" }}>
+          <span className="pl-meta-item pl-meta-count">
             <FiUsers size={15} /> {joined} / {game.max_players}
           </span>
         </div>
 
         {/* Join-progress bar */}
-        <div style={{ height: 8, borderRadius: 6, background: "#EDEDED", overflow: "hidden" }}>
+        <div className="pl-bar-track">
           <div
+            className="pl-bar-fill"
             style={{
               width: `${ratio * 100}%`,
-              height: "100%",
-              borderRadius: 6,
               background: barColor,
-              transition: "width 0.3s ease",
             }}
           />
         </div>
@@ -166,17 +125,7 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
           <button
             disabled={!joinable || joiningId === game._id}
             onClick={() => onJoin(game)}
-            style={{
-              width: "100%",
-              marginTop: 16,
-              background: joinable ? "#2F8F4E" : "#E4E4E4",
-              color: joinable ? "#FFFFFF" : "#999",
-              border: "none",
-              borderRadius: 12,
-              padding: "11px 0",
-              fontWeight: 600,
-              cursor: joinable ? "pointer" : "default",
-            }}
+            className={`pl-join ${joinable ? "pl-join--enabled" : "pl-join--disabled"}`}
           >
             {alreadyIn
               ? "You're in"
@@ -194,20 +143,7 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
 
 function Badge({ bg, color, children }) {
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        background: bg,
-        color,
-        padding: "4px 10px",
-        borderRadius: 20,
-        fontSize: 12,
-        fontWeight: 700,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
-      }}
-    >
+    <span className="pl-badge" style={{ background: bg, color }}>
       {children}
     </span>
   );
@@ -219,19 +155,7 @@ function IconButton({ title, onClick, disabled, children }) {
       title={title}
       onClick={onClick}
       disabled={disabled}
-      style={{
-        width: 34,
-        height: 34,
-        borderRadius: "50%",
-        border: "none",
-        background: "rgba(255,255,255,0.92)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: disabled ? "default" : "pointer",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-        opacity: disabled ? 0.6 : 1,
-      }}
+      className={`pl-icon-btn ${disabled ? "pl-icon-btn--disabled" : ""}`}
     >
       {children}
     </button>
@@ -240,24 +164,16 @@ function IconButton({ title, onClick, disabled, children }) {
 
 export default function PostsList({ games, loading, error, currentUserId, onJoin, joiningId, onEdit, onDelete, deletingId }) {
   if (loading) {
-    return <p style={{ color: "#555" }}>Loading games…</p>;
+    return <p className="pl-status">Loading games…</p>;
   }
   if (error) {
-    return <p style={{ color: "#A81B1B" }}>{error}</p>;
+    return <p className="pl-error">{error}</p>;
   }
   if (!games.length) {
     return (
-      <div
-        style={{
-          background: "#FFFFFF",
-          borderRadius: 16,
-          padding: 32,
-          textAlign: "center",
-          color: "#555",
-        }}
-      >
-        <p style={{ margin: 0, fontWeight: 600, color: "#1A1A1A" }}>No games yet</p>
-        <p style={{ margin: "8px 0 0", fontSize: 14 }}>
+      <div className="pl-empty">
+        <p className="pl-empty-title">No games yet</p>
+        <p className="pl-empty-sub">
           Be the first — hit “Post a game” to host one.
         </p>
       </div>
@@ -265,7 +181,7 @@ export default function PostsList({ games, loading, error, currentUserId, onJoin
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className="pl-list">
       {games.map((game) => (
         <GameCard
           key={game._id}

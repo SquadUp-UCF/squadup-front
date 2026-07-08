@@ -1,0 +1,241 @@
+/* ============================================================================
+   Squad-Up — Auth shell (shared by every auth step)
+   Split-panel layout + base form styling used by AuthForm, OtpVerif and
+   ProfileSetup. Scoped under .su-* so it won't collide with global styles.
+   Fonts: Outfit (display) + DM Sans (body) — loaded in index.html.
+   ========================================================================== */
+
+.su-auth {
+    --su-green: #1b7a32;
+    --su-green-deep: #0d4a1e;
+    --su-green-accent: #a8e6b8;
+    --su-text: #0d2b18;
+    --su-muted: #6b9478;
+    --su-surface: #eaf4e4;
+    --su-border: rgba(13, 80, 40, 0.14);
+    --su-border-strong: rgba(13, 80, 40, 0.22);
+
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    width: 100%;
+    /* Lock to the viewport so the page itself never scrolls — the live board
+       auto-scrolls on its own, and the form panel scrolls internally if tall. */
+    height: 100svh;
+    overflow: hidden;
+    background: #ffffff;
+    color: var(--su-text);
+    font-family: "DM Sans", system-ui, sans-serif;
+    letter-spacing: normal;
+}
+
+/* ── Right form panel ─────────────────────────────────────────────────────── */
+
+.su-panel {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-left: 1px solid rgba(13, 80, 40, 0.1);
+    /* Only this panel may scroll (for tall register forms); the page stays put. */
+    overflow-y: auto;
+}
+
+.su-form-wrap {
+    width: 100%;
+    max-width: 384px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.su-mobile-logo {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 40px;
+}
+
+.su-mobile-logo-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.su-mobile-logo-text {
+    font-family: "Outfit", sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--su-text);
+}
+
+.su-head {
+    margin-bottom: 32px;
+}
+
+.su-head-title {
+    font-family: "Outfit", sans-serif;
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+    color: var(--su-text);
+    margin: 0 0 6px;
+}
+
+.su-head-sub {
+    font-size: 16px;
+    color: var(--su-muted);
+    margin: 0;
+}
+
+.su-head-sub b {
+    color: var(--su-text);
+    font-weight: 700;
+}
+
+.su-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.su-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.su-label {
+    font-family: "Outfit", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--su-muted);
+}
+
+.su-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    color: var(--su-text);
+    background: var(--su-surface);
+    border: 1.5px solid var(--su-border);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.su-input::placeholder {
+    color: var(--su-muted);
+    opacity: 0.7;
+}
+
+.su-input:focus {
+    background: #ffffff;
+    border-color: var(--su-green);
+    box-shadow: 0 0 0 3px rgba(27, 122, 50, 0.12);
+}
+
+.su-submit {
+    width: 100%;
+    margin-top: 4px;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-family: "Outfit", sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #ffffff;
+    background: var(--su-green);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.15s, transform 0.1s;
+}
+
+.su-submit:hover {
+    opacity: 0.9;
+}
+
+.su-submit:active {
+    transform: scale(0.98);
+}
+
+.su-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.su-message {
+    margin: 0;
+    font-size: 14px;
+    color: #c42828;
+    background: #fdeaea;
+    border: 1px solid rgba(196, 40, 40, 0.2);
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.su-toggle {
+    margin: 24px 0 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--su-muted);
+}
+
+.su-toggle-btn {
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--su-green);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.su-toggle-btn:hover {
+    opacity: 0.7;
+}
+
+/* ── Responsive: collapse to a single column below 1024px ─────────────────── */
+
+@media (max-width: 1024px) {
+    .su-auth {
+        grid-template-columns: 1fr;
+    }
+
+    .su-hero {
+        display: none;
+    }
+
+    .su-panel {
+        border-left: none;
+    }
+
+    .su-mobile-logo {
+        display: flex;
+    }
+}
+
+/* Keep the panel readable if the app ever runs in a forced dark scheme. */
+@media (prefers-color-scheme: dark) {
+    .su-auth,
+    .su-panel {
+        background: #ffffff;
+    }
+}

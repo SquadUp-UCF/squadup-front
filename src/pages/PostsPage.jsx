@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import MapComponent from "../components/MapComponent";
-import PostsList from "../components/PostsList";
-import PostGameModal from "../components/PostGameModal";
-import ConfirmModal from "../components/ConfirmModal";
+import MapComponent from "../components/PostPage/MapComponent";
+import PostsList from "../components/PostPage/PostsList";
+import PostGameModal from "../components/PostPage/PostGameModal";
+import ConfirmModal from "../components/PostPage/ConfirmModal";
 import Logo from "../components/Logo";
 import { isActive, milesBetween } from "../utils/games";
+import "./PostsPage.css";
 
 const DEFAULT_RADIUS = 5;
 
@@ -178,55 +179,30 @@ function PostsPage() {
       userPosition={userPosition}
       radiusMiles={radiusMiles}
       onRadiusChange={setRadiusMiles}
+      currentUserId={currentUserId}
+      onJoin={handleJoin}
+      joiningId={joiningId}
       height={isNarrow ? "calc(100vh - 200px)" : "calc(100vh - 140px)"}
     />
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#E9F5E4", fontFamily: "sans-serif" }}>
+    <div className="pp-page">
       {/* Top nav */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "16px 32px",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#FFFFFF",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
-            }}
-          >
-            <Logo size={28} />
+      <div className="pp-nav">
+        <div className="pp-brand">
+          <span className="pp-logo-badge">
+            <Logo size={40} style={{ objectFit: "cover" }} />
           </span>
-          <span style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A" }}>
+          <span className="pp-brand-name">
             Squad-Up
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div className="pp-nav-actions">
           <button
             onClick={() => setShowModal(true)}
-            style={{
-              background: "#2F8F4E",
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: 20,
-              padding: "10px 20px",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className="pp-post-btn"
           >
             + Post a game
           </button>
@@ -234,18 +210,7 @@ function PostsPage() {
           <div
             title={user ? user.name : "Profile"}
             onClick={logout}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "#CDEBCD",
-              color: "#1F6B3E",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
+            className="pp-avatar"
           >
             {user?.username ? user.username.slice(0, 2).toUpperCase() : "?"}
           </div>
@@ -253,69 +218,23 @@ function PostsPage() {
       </div>
 
       {/* Hero banner */}
-      <div
-        style={{
-          margin: "0 32px 24px",
-          background: "#1F6B3E",
-          borderRadius: 16,
-          padding: "32px 40px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 20,
-        }}
-      >
+      <div className="pp-hero">
         <div>
-          <span
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              color: "#FFFFFF",
-              padding: "4px 12px",
-              borderRadius: 20,
-              fontSize: 12,
-              fontWeight: 600,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <span
-              className="pulsing-dot"
-              style={{
-                width: 8,
-                height: 8,
-                border: "none",
-                "--dot-spread": "8px",
-              }}
-            />
+          <span className="pp-live-badge">
+            <span className="pulsing-dot pp-live-dot" />
             LIVE - UCF verified only
           </span>
-          <h1
-            style={{
-              color: "#FFFFFF",
-              fontSize: 36,
-              margin: "12px 0 8px",
-            }}
-          >
+          <h1 className="pp-hero-title">
             Welcome{user?.username ? `, ${user.username}` : ""}
           </h1>
-          <p style={{ color: "#D9EFD9", margin: 0 }}>
+          <p className="pp-hero-subtitle">
             Tap a game to join, or post your own.
           </p>
         </div>
 
         <button
           onClick={() => setShowModal(true)}
-          style={{
-            background: "#FFFFFF",
-            color: "#1F6B3E",
-            border: "none",
-            borderRadius: 20,
-            padding: "12px 24px",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
+          className="pp-hero-btn"
         >
           Post a game
         </button>
@@ -323,33 +242,15 @@ function PostsPage() {
 
       {/* Narrow-screen toggle between the posts feed and the map */}
       {isNarrow && (
-        <div style={{ padding: "0 32px 16px" }}>
-          <div
-            style={{
-              display: "flex",
-              background: "#FFFFFF",
-              borderRadius: 12,
-              padding: 4,
-              gap: 4,
-            }}
-          >
+        <div className="pp-toggle-wrap">
+          <div className="pp-toggle">
             {["posts", "map"].map((view) => {
               const active = mobileView === view;
               return (
                 <button
                   key={view}
                   onClick={() => setMobileView(view)}
-                  style={{
-                    flex: 1,
-                    padding: "10px 0",
-                    border: "none",
-                    borderRadius: 8,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    textTransform: "capitalize",
-                    background: active ? "#2F8F4E" : "transparent",
-                    color: active ? "#FFFFFF" : "#1F6B3E",
-                  }}
+                  className={`pp-toggle-btn${active ? " pp-toggle-btn--active" : ""}`}
                 >
                   {view === "posts" ? "Posts" : "Map"}
                 </button>
@@ -361,20 +262,13 @@ function PostsPage() {
 
       {/* Main content */}
       {isNarrow ? (
-        <div style={{ padding: "0 32px 32px" }}>
+        <div className="pp-mobile-content">
           {mobileView === "posts" ? postsPanel : mapPanel}
         </div>
       ) : (
-        <div
-          style={{
-            display: "flex",
-            gap: 24,
-            padding: "0 32px 32px",
-            alignItems: "flex-start",
-          }}
-        >
-          <div style={{ flex: "1 1 400px", minWidth: 0 }}>{postsPanel}</div>
-          <div style={{ flex: "1 1 500px", minWidth: 0, position: "sticky", top: 24 }}>
+        <div className="pp-content">
+          <div className="pp-posts-col">{postsPanel}</div>
+          <div className="pp-map-col">
             {mapPanel}
           </div>
         </div>

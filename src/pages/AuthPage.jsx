@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import AuthForm from "../components/AuthForm";
-import OtpVerification from "../components/OtpVerif";
-import ProfileSetup from "../components/ProfileSetup";
+import AuthForm from "../components/AuthPage/AuthForm";
+import OtpVerification from "../components/AuthPage/OtpVerif";
+import ProfileSetup from "../components/AuthPage/ProfileSetup";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -248,6 +248,25 @@ function AuthPage() {
             onSubmit={handleSubmit}
             onToggleMode={toggleMode}
         />
+        // <OtpVerification
+        //         email={email}
+        //         code={otpCode}
+        //         onCodeChange={setOtpCode}
+        //         onSubmit={handleVerifyOtp}
+        //         onResend={handleResendOtp}
+        //         message={message}
+        //     />
+
+        // <ProfileSetup
+        //         username={username}
+        //         sport={sport}
+        //         pfpFile={pfpFile}
+        //         onUsernameChange={setUsername}
+        //         onSportChange={setSport}
+        //         onPfpChange={setPfpFile}
+        //         onSubmit={handleProfileSubmit}
+        //         message={message}
+        //     />
     );
 }
 

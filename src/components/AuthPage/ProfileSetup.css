@@ -1,0 +1,126 @@
+/* ============================================================================
+   Squad-Up — Profile setup step
+   Styled sport <select> + picture uploader on top of the shared shell
+   (AuthShell.css).
+   ========================================================================== */
+
+/* ── Sport select ─────────────────────────────────────────────────────────── */
+
+.ps-select-wrap {
+  position: relative;
+}
+
+/* Icon of the currently selected sport, overlaid on the left of the control. */
+.ps-select-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.ps-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-left: 42px;
+  padding-right: 44px;
+  cursor: pointer;
+  /* Inline chevron so the control stays self-contained (no icon asset). */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b9478' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+/* Keep the placeholder option looking muted vs. a real selection. */
+.ps-select:required:invalid {
+  color: var(--su-muted);
+}
+
+.ps-select option {
+  color: var(--su-text);
+}
+
+.ps-select option[value=""][disabled] {
+  color: var(--su-muted);
+}
+
+/* ── Picture uploader ─────────────────────────────────────────────────────── */
+
+.ps-upload {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--su-surface);
+  border: 1.5px dashed var(--su-border-strong);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ps-upload:hover {
+  border-color: var(--su-green);
+  background: #ffffff;
+}
+
+.ps-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--su-green);
+}
+
+.ps-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ps-avatar-initial {
+  font-family: "Outfit", sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.ps-upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ps-upload-title {
+  font-family: "Outfit", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--su-text);
+}
+
+.ps-upload-sub {
+  font-size: 13px;
+  color: var(--su-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Visually hidden but still keyboard/click accessible via the wrapping label. */
+.ps-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
