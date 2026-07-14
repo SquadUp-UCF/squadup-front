@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import "./MapComponent.css";
 import L from 'leaflet';
-import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl } from '../../utils/games';
+import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner } from '../../utils/games';
 import { SportIcon } from '../SportIcons';
 import { MdNearMe } from 'react-icons/md';
 import { FiMapPin, FiClock, FiUsers } from 'react-icons/fi';
@@ -65,9 +65,9 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId, onLeave, leavin
           feed card). Status/live badge floats top-left. */}
       <div
         className="map-popup-header"
-        style={game.photo_url ? { backgroundImage: `url(${resolvePhotoUrl(game.photo_url)})` } : undefined}
+        style={hasCustomBanner(game) ? { backgroundImage: `url(${resolvePhotoUrl(game.photo_url)})` } : undefined}
       >
-        {!game.photo_url && <SportIcon sport={game.sport} size={38} color="rgba(255,255,255,0.92)" />}
+        {!hasCustomBanner(game) && <SportIcon sport={game.sport} size={38} color="rgba(255,255,255,0.92)" />}
         <div className="map-popup-badge-wrap">
           {live ? (
             <span className="map-popup-live-badge">

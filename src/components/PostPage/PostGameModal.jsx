@@ -16,7 +16,7 @@ import { FiMapPin, FiClock, FiUsers } from "react-icons/fi";
 import "./PostGameModal.css";
 import LocationPicker from "./LocationPicker";
 import { SportIcon, availableSports } from "../SportIcons";
-import { resolvePhotoUrl } from "../../utils/games";
+import { resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -72,9 +72,7 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
   // the next time someone clicks it and picks a new image.
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
-  const existingBannerUrl = game?.photo_url && !game.photo_url.startsWith("/sports/")
-    ? resolvePhotoUrl(game.photo_url)
-    : null;
+  const existingBannerUrl = game && hasCustomBanner(game) ? resolvePhotoUrl(game.photo_url) : null;
   const bannerUrl = bannerPreview || existingBannerUrl;
 
   useEffect(() => {

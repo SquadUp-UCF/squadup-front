@@ -23,6 +23,18 @@ export function resolvePhotoUrl(photoUrl) {
   return `${STATIC_BASE}${photoUrl}`;
 }
 
+/**
+ * Whether a game has a real, host-uploaded banner rather than the stock
+ * per-sport default the backend always falls back to (see squadup-api
+ * bannerForSport/isStockBanner). The feed card, map popup, and detail modal
+ * all use this — same rule the post editor already uses — so "no banner"
+ * means the same thing everywhere: show the sport-icon placeholder instead
+ * of trying to render a photo.
+ */
+export function hasCustomBanner(game) {
+  return Boolean(game.photo_url) && !game.photo_url.startsWith("/sports/");
+}
+
 export const STATUS_META = {
   open: { bg: "#E4F3E8", color: "#1F6B3E", label: "Open", pin: "#2F8F4E" },
   confirmed: { bg: "#DCEAFB", color: "#1B5FA8", label: "Confirmed", pin: "#1B5FA8" },

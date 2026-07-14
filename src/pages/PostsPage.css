@@ -204,6 +204,29 @@
   padding: 0 32px 32px;
 }
 
+/* Swipeable posts/map slider (mobile only). The track is double the
+   viewport's width holding both panes side by side; swiping (or the toggle
+   buttons above) just changes which half it's translated to. */
+.pp-swipe-viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.pp-swipe-track {
+  display: flex;
+  width: 200%;
+}
+
+.pp-swipe-track--animated {
+  transition: transform 0.25s ease;
+}
+
+.pp-swipe-pane {
+  width: 50%;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
 .pp-content {
   display: flex;
   gap: 24px;
