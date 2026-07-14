@@ -1,0 +1,191 @@
+/* Shell (overlay/header/labels/inputs/submit) reuses PostGameModal's pgm-*
+   classes so this reads as the same modal family. Only the pieces unique to
+   the detail view (map, roster, notifications toggle) get their own gdm-*
+   rules. */
+
+.gdm-modal {
+  max-width: 420px;
+  padding: 0;
+}
+
+.gdm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 28px 28px;
+}
+
+/* Full-bleed hero — fills the whole post header, same treatment as the
+   editor's banner (PostGameModal's .pgm-hero) but read-only: status badge
+   top-left, close button top-right (.pgm-hero-close, shared). */
+.gdm-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(135deg, #2f8f4e 0%, #1f6b3e 100%);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.gdm-hero-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gdm-hero-status {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.gdm-sport-pill {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: #e4f3e8;
+  color: #1f6b3e;
+}
+
+.gdm-location {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gdm-map-wrap {
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.gdm-map {
+  height: 100%;
+  width: 100%;
+}
+
+.gdm-description {
+  margin: 0;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.gdm-meta-row {
+  display: flex;
+  gap: 16px;
+  color: #555;
+  font-size: 14px;
+}
+
+.gdm-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gdm-notif-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  border: 1px solid #d6e4d6;
+  background: #fafafa;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f6b3e;
+  cursor: pointer;
+}
+
+.gdm-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gdm-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.gdm-player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.gdm-player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #cdebcd;
+  color: #1f6b3e;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.gdm-player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gdm-player-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gdm-player-host-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #1f6b3e;
+  background: #e4f3e8;
+  border-radius: 8px;
+  padding: 2px 6px;
+}
+
+.gdm-player-skill {
+  font-size: 12px;
+  color: #888;
+}
+
+.gdm-leave-btn {
+  background: #fde6e6;
+  color: #c81e1e;
+}

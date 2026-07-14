@@ -7,7 +7,7 @@ import { useState } from "react";
 import "./PostsList.css";
 import { FiMapPin, FiClock, FiUsers, FiHeart, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { SportIcon } from "../SportIcons";
-import { statusMeta, formatWhen, activeCount, isLive } from "../../utils/games";
+import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
 
 // A game created within this window shows a "NEW" badge.
 const NEW_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -16,7 +16,7 @@ function sportLabel(sport) {
   return String(sport || "").replace(/-/g, " ");
 }
 
-function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, deletingId }) {
+function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, onEdit, onDelete, deletingId, onSelect }) {
   const [liked, setLiked] = useState(false);
   const meta = statusMeta(game);
   const joined = activeCount(game);
@@ -36,17 +36,17 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
     game.status !== "completed" && game.status !== "cancelled";
 
   return (
-    <div className="pl-card">
+    <div className="pl-card pl-card--clickable" onClick={() => onSelect?.(game)}>
       {/* Image / placeholder header */}
       <div
         className="pl-card-header"
         style={{
-          background: game.photo_url
-            ? `center/cover no-repeat url(${game.photo_url})`
+          background: hasCustomBanner(game)
+            ? `center/cover no-repeat url(${resolvePhotoUrl(game.photo_url)})`
             : "linear-gradient(135deg, #2F8F4E 0%, #1F6B3E 100%)",
         }}
       >
-        {!game.photo_url && (
+        {!hasCustomBanner(game) && (
           <SportIcon sport={game.sport} size={64} color="rgba(255,255,255,0.55)" />
         )}
 
@@ -67,19 +67,19 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
         <div className="pl-badges pl-badges-right">
           {isHost ? (
             <>
-              <IconButton title="Edit" onClick={() => onEdit(game)}>
+              <IconButton title="Edit" onClick={(e) => { e.stopPropagation(); onEdit(game); }}>
                 <FiEdit2 size={16} color="#1F6B3E" />
               </IconButton>
               <IconButton
                 title="Delete"
                 disabled={deletingId === game._id}
-                onClick={() => onDelete(game)}
+                onClick={(e) => { e.stopPropagation(); onDelete(game); }}
               >
                 <FiTrash2 size={16} color="#C81E1E" />
               </IconButton>
             </>
           ) : (
-            <IconButton title="Save" onClick={() => setLiked((v) => !v)}>
+            <IconButton title="Save" onClick={(e) => { e.stopPropagation(); setLiked((v) => !v); }}>
               <FiHeart size={16} color={liked ? "#E4572E" : "#666"} fill={liked ? "#E4572E" : "none"} />
             </IconButton>
           )}
@@ -121,19 +121,26 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onEdit, onDelete, de
           />
         </div>
 
-        {!isHost && (
+        {!isHost && alreadyIn && (
+          <button
+            disabled={leavingId === game._id}
+            onClick={(e) => { e.stopPropagation(); onLeave(game); }}
+            className="pl-join pl-leave"
+          >
+            {leavingId === game._id ? "Leaving…" : "You're in — Leave"}
+          </button>
+        )}
+        {!isHost && !alreadyIn && (
           <button
             disabled={!joinable || joiningId === game._id}
-            onClick={() => onJoin(game)}
+            onClick={(e) => { e.stopPropagation(); onJoin(game); }}
             className={`pl-join ${joinable ? "pl-join--enabled" : "pl-join--disabled"}`}
           >
-            {alreadyIn
-              ? "You're in"
-              : game.status === "locked"
-                ? "Full"
-                : joiningId === game._id
-                  ? "Joining…"
-                  : "Join game"}
+            {game.status === "locked"
+              ? "Full"
+              : joiningId === game._id
+                ? "Joining…"
+                : "Join game"}
           </button>
         )}
       </div>
@@ -162,7 +169,7 @@ function IconButton({ title, onClick, disabled, children }) {
   );
 }
 
-export default function PostsList({ games, loading, error, currentUserId, onJoin, joiningId, onEdit, onDelete, deletingId }) {
+export default function PostsList({ games, loading, error, currentUserId, onJoin, joiningId, onLeave, leavingId, onEdit, onDelete, deletingId, onSelect }) {
   if (loading) {
     return <p className="pl-status">Loading games…</p>;
   }
@@ -189,9 +196,12 @@ export default function PostsList({ games, loading, error, currentUserId, onJoin
           currentUserId={currentUserId}
           onJoin={onJoin}
           joiningId={joiningId}
+          onLeave={onLeave}
+          leavingId={leavingId}
           onEdit={onEdit}
           onDelete={onDelete}
           deletingId={deletingId}
+          onSelect={onSelect}
         />
       ))}
     </div>

@@ -52,6 +52,10 @@
   cursor: pointer;
 }
 
+.pp-avatar-wrap {
+  position: relative;
+}
+
 .pp-avatar {
   width: 40px;
   height: 40px;
@@ -63,6 +67,53 @@
   justify-content: center;
   font-weight: 700;
   cursor: pointer;
+  overflow: hidden;
+}
+
+.pp-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pp-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.pp-account-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 2001;
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pp-account-menu-item {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  cursor: pointer;
+}
+
+.pp-account-menu-item:hover {
+  background: #F1F1F1;
+}
+
+.pp-account-menu-item--danger {
+  color: #C81E1E;
 }
 
 /* Hero banner */
@@ -151,6 +202,29 @@
 /* Main content */
 .pp-mobile-content {
   padding: 0 32px 32px;
+}
+
+/* Swipeable posts/map slider (mobile only). The track is double the
+   viewport's width holding both panes side by side; swiping (or the toggle
+   buttons above) just changes which half it's translated to. */
+.pp-swipe-viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.pp-swipe-track {
+  display: flex;
+  width: 200%;
+}
+
+.pp-swipe-track--animated {
+  transition: transform 0.25s ease;
+}
+
+.pp-swipe-pane {
+  width: 50%;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .pp-content {

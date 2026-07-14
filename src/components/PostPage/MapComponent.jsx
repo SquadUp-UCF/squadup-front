@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import "./MapComponent.css";
 import L from 'leaflet';
-import { statusMeta, formatWhen, activeCount, isLive } from '../../utils/games';
+import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner } from '../../utils/games';
 import { SportIcon } from '../SportIcons';
 import { MdNearMe } from 'react-icons/md';
 import { FiMapPin, FiClock, FiUsers } from 'react-icons/fi';
@@ -42,7 +42,7 @@ function gameMarkerIcon(game) {
 
 // The card shown when a marker is clicked — a compact mirror of the feed's game
 // card so a pin instantly reads as the same object seen in the list.
-function GamePopupCard({ game, currentUserId, onJoin, joiningId }) {
+function GamePopupCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId }) {
   const meta = statusMeta(game);
   const live = isLive(game);
   const joined = activeCount(game);
@@ -57,13 +57,17 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId }) {
     !isHost && !alreadyIn && game.status !== 'locked' &&
     game.status !== 'completed' && game.status !== 'cancelled';
   const joining = joiningId === game._id;
+  const leaving = leavingId === game._id;
 
   return (
     <div className="map-popup-card">
-      {/* Green gradient header with a centered sport icon — echoes the card's
-          image/placeholder banner. Status/live badge floats top-left. */}
-      <div className="map-popup-header">
-        <SportIcon sport={game.sport} size={38} color="rgba(255,255,255,0.92)" />
+      {/* Banner image (falls back to a gradient + sport icon, same as the
+          feed card). Status/live badge floats top-left. */}
+      <div
+        className="map-popup-header"
+        style={hasCustomBanner(game) ? { backgroundImage: `url(${resolvePhotoUrl(game.photo_url)})` } : undefined}
+      >
+        {!hasCustomBanner(game) && <SportIcon sport={game.sport} size={38} color="rgba(255,255,255,0.92)" />}
         <div className="map-popup-badge-wrap">
           {live ? (
             <span className="map-popup-live-badge">
@@ -128,7 +132,17 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId }) {
         </div>
 
         {/* Primary CTA */}
-        {!isHost && onJoin && (
+        {!isHost && alreadyIn && onLeave && (
+          <button
+            disabled={leaving}
+            onClick={() => onLeave(game)}
+            className="game-popup-cta map-popup-cta"
+            style={{ background: '#FDE6E6', color: '#C81E1E', cursor: leaving ? 'default' : 'pointer' }}
+          >
+            {leaving ? 'Leaving…' : "You're in — Leave"}
+          </button>
+        )}
+        {!isHost && !alreadyIn && onJoin && (
           <button
             disabled={!joinable || joining}
             onClick={() => onJoin(game)}
@@ -139,13 +153,11 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId }) {
               cursor: joinable ? 'pointer' : 'default',
             }}
           >
-            {alreadyIn
-              ? "You're in"
-              : game.status === 'locked'
-                ? 'Full'
-                : joining
-                  ? 'Joining…'
-                  : <>Join <span className="map-popup-arrow">→</span></>}
+            {game.status === 'locked'
+              ? 'Full'
+              : joining
+                ? 'Joining…'
+                : <>Join <span className="map-popup-arrow">→</span></>}
           </button>
         )}
       </div>
@@ -184,6 +196,25 @@ function MapRefSetter({ mapRef }) {
   return null;
 }
 
+// Leaflet caches its container's pixel size at init and never re-measures it
+// on its own — when the surrounding layout resizes (compressing/expanding the
+// window, or the mobile/desktop breakpoint swap remounting this component's
+// wrapper), the map keeps using the stale size, which throws off panning/
+// zoom math and can make it look like it's snapped to the wrong place.
+// A ResizeObserver on the container calls invalidateSize() to re-measure.
+function MapResizeHandler() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
+  return null;
+}
+
 /**
  * Renders the discovery map. Games are passed in from the parent (PostsPage) so
  * the list and the map always show the same data. Each game with valid
@@ -198,9 +229,14 @@ export default function MapComponent({
   currentUserId,
   onJoin,
   joiningId,
+  onLeave,
+  leavingId,
 }) {
   const mapRef = useRef(null);
-  const hasCenteredOnUser = useRef(false);
+  // Starts true when userPosition is already known — MapContainer's initial
+  // `center` prop above already placed it correctly, so the correction effect
+  // below only needs to run when geolocation resolves *after* this mounts.
+  const hasCenteredOnUser = useRef(Boolean(userPosition));
 
   // Once we have both the map instance AND the user's position, snap to it (one time)
   useEffect(() => {
@@ -242,8 +278,11 @@ export default function MapComponent({
   return (
     <div className="map-container-wrap" style={{ height }}>
       <MapContainer
-        center={defaultPosition}
-        zoom={DEFAULT_ZOOM}
+        // If the user's position is already known when this mounts (e.g. after
+        // the mobile/desktop layout swap remounts this component), start there
+        // directly instead of always flashing to the hardcoded London default.
+        center={userPosition || defaultPosition}
+        zoom={userPosition ? zoomForRadius(radiusMiles) : DEFAULT_ZOOM}
         minZoom={9}
         zoomControl={false}
         scrollWheelZoom={true}
@@ -257,6 +296,7 @@ export default function MapComponent({
         />
 
         <MapRefSetter mapRef={mapRef} />
+        <MapResizeHandler />
 
         {userPosition && (
           <Marker position={userPosition} icon={userLocationIcon}>
@@ -272,6 +312,8 @@ export default function MapComponent({
                 currentUserId={currentUserId}
                 onJoin={onJoin}
                 joiningId={joiningId}
+                onLeave={onLeave}
+                leavingId={leavingId}
               />
             </Popup>
           </Marker>

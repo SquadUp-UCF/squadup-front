@@ -74,6 +74,8 @@
   position: relative;
   height: 74px;
   background: linear-gradient(135deg, #2F8F4E 0%, #1F6B3E 100%);
+  background-size: cover;
+  background-position: center;
   display: flex;
   align-items: center;
   justify-content: center;

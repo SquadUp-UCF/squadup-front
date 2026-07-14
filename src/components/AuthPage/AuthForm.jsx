@@ -52,6 +52,11 @@ function AuthForm({
     const [showPass, setShowPass] = useState(false);
     const isSignUp = mode === "register";
 
+    // Restricted to the NID format (two letters + six digits) — keep in sync
+    // with the copy of this pattern in AuthPage.jsx.
+    const UCF_EMAIL = /^[a-z]{2}\d{6}@ucf\.edu$/i;
+
+
     const hasLength = password.length >= 8 && password.length <= 20;
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
@@ -115,11 +120,15 @@ function AuthForm({
                             <input
                                 className="su-input"
                                 type="email"
-                                placeholder="you@example.com"
+                                placeholder="ab123456@ucf.edu"
                                 value={email}
                                 required
                                 onChange={(e) => onEmailChange(e.target.value)}
                             />
+                            <div className="indicator-row su-match">
+                                <span className={`indicator-dot ${UCF_EMAIL.test(email) ? "met" : ""}`} />
+                                {UCF_EMAIL.test(email) ? "Valid UCF email" : "Not valid UCF email"}
+                            </div>
                         </div>
 
                         <div className="su-field">
@@ -158,6 +167,21 @@ function AuthForm({
                         </div>
 
                         {isSignUp && (
+                            <div className="su-field">
+                                <label className="su-label">Confirm password</label>
+                                <input
+                                    className="su-input"
+                                    type="password"
+                                    placeholder="Re-enter your password"
+                                    value={confirmPassword}
+                                    required
+                                    onChange={(e) => onConfirmPasswordChange(e.target.value)}
+                                />
+                            </div>
+                        )}
+
+
+                        {isSignUp && (
                             <div className="su-checks">
                                 <div className="indicator-row">
                                     <span className={`indicator-dot ${hasLength ? "met" : ""}`} />
@@ -179,20 +203,6 @@ function AuthForm({
                                     <span className={`indicator-dot ${hasSpecial ? "met" : ""}`} />
                                     1 special character
                                 </div>
-                            </div>
-                        )}
-
-                        {isSignUp && (
-                            <div className="su-field">
-                                <label className="su-label">Confirm password</label>
-                                <input
-                                    className="su-input"
-                                    type="password"
-                                    placeholder="Re-enter your password"
-                                    value={confirmPassword}
-                                    required
-                                    onChange={(e) => onConfirmPasswordChange(e.target.value)}
-                                />
                                 <div className="indicator-row su-match">
                                     <span className={`indicator-dot ${passwordsMatch ? "met" : ""}`} />
                                     {passwordsMatch ? "Passwords match" : "Passwords do not match"}
