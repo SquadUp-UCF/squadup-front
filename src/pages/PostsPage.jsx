@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapComponent from "../components/PostPage/MapComponent";
 import PostsList from "../components/PostPage/PostsList";
@@ -40,6 +40,52 @@ function PostsPage() {
 
   const isNarrow = useIsNarrow();
   const [mobileView, setMobileView] = useState("posts"); // "posts" | "map"
+  // Swipe-to-switch between the two mobile panes. `dragOffset` is the live
+  // finger-follow distance while a touch is in progress (0 the rest of the
+  // time, including mid-snap-back), so the track only skips its transition
+  // (for 1:1 tracking) during an actual drag.
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const swipeTouchStartX = useRef(null);
+  const swipeViewportWidth = useRef(0);
+  const swipeViewportRef = useRef(null);
+  // Mirrors `dragOffset` but read synchronously in the touchend handler —
+  // `dragOffset` state can still be stale there (React hasn't necessarily
+  // re-rendered between a touchmove and a touchend fired in the same tick,
+  // e.g. on a very fast flick), which would silently drop the gesture.
+  const dragOffsetRef = useRef(0);
+
+  function handleSwipeTouchStart(e) {
+    swipeTouchStartX.current = e.touches[0].clientX;
+    swipeViewportWidth.current = swipeViewportRef.current?.offsetWidth || 1;
+    setIsDragging(true);
+  }
+
+  function handleSwipeTouchMove(e) {
+    if (swipeTouchStartX.current == null) return;
+    const delta = e.touches[0].clientX - swipeTouchStartX.current;
+    // Clamp so you can't drag past whichever pane isn't adjacent (posts can
+    // only drag left toward map; map can only drag right toward posts).
+    const min = mobileView === "posts" ? -swipeViewportWidth.current : 0;
+    const max = mobileView === "map" ? swipeViewportWidth.current : 0;
+    const clamped = Math.min(max, Math.max(min, delta));
+    dragOffsetRef.current = clamped;
+    setDragOffset(clamped);
+  }
+
+  function handleSwipeTouchEnd() {
+    const threshold = swipeViewportWidth.current * 0.2;
+    const delta = dragOffsetRef.current;
+    if (delta <= -threshold && mobileView === "posts") {
+      setMobileView("map");
+    } else if (delta >= threshold && mobileView === "map") {
+      setMobileView("posts");
+    }
+    dragOffsetRef.current = 0;
+    setDragOffset(0);
+    setIsDragging(false);
+    swipeTouchStartX.current = null;
+  }
   const [showModal, setShowModal] = useState(false);
   const [editingGame, setEditingGame] = useState(null); // game being edited, or null
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -364,7 +410,23 @@ function PostsPage() {
       {/* Main content */}
       {isNarrow ? (
         <div className="pp-mobile-content">
-          {mobileView === "posts" ? postsPanel : mapPanel}
+          <div
+            className="pp-swipe-viewport"
+            ref={swipeViewportRef}
+            onTouchStart={handleSwipeTouchStart}
+            onTouchMove={handleSwipeTouchMove}
+            onTouchEnd={handleSwipeTouchEnd}
+          >
+            <div
+              className={`pp-swipe-track${isDragging ? "" : " pp-swipe-track--animated"}`}
+              style={{
+                transform: `translateX(calc(${mobileView === "posts" ? "0%" : "-50%"} + ${dragOffset}px))`,
+              }}
+            >
+              <div className="pp-swipe-pane">{postsPanel}</div>
+              <div className="pp-swipe-pane">{mapPanel}</div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="pp-content">

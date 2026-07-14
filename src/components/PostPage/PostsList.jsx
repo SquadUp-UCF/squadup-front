@@ -7,7 +7,7 @@ import { useState } from "react";
 import "./PostsList.css";
 import { FiMapPin, FiClock, FiUsers, FiHeart, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { SportIcon } from "../SportIcons";
-import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl } from "../../utils/games";
+import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
 
 // A game created within this window shows a "NEW" badge.
 const NEW_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -41,12 +41,12 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
       <div
         className="pl-card-header"
         style={{
-          background: game.photo_url
+          background: hasCustomBanner(game)
             ? `center/cover no-repeat url(${resolvePhotoUrl(game.photo_url)})`
             : "linear-gradient(135deg, #2F8F4E 0%, #1F6B3E 100%)",
         }}
       >
-        {!game.photo_url && (
+        {!hasCustomBanner(game) && (
           <SportIcon sport={game.sport} size={64} color="rgba(255,255,255,0.55)" />
         )}
 

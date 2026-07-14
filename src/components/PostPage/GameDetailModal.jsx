@@ -18,7 +18,7 @@ import "./PostGameModal.css";
 import "./MapComponent.css";
 import "./GameDetailModal.css";
 import { SportIcon } from "../SportIcons";
-import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl } from "../../utils/games";
+import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
 
 const API = import.meta.env.VITE_API_URL;
 const DEVICE_TOKEN_KEY = "squadup_web_device_token";
@@ -148,9 +148,9 @@ export default function GameDetailModal({ game, currentUserId, onClose, onJoin, 
       <div onClick={(e) => e.stopPropagation()} className="pgm-modal gdm-modal">
         <div
           className="gdm-hero"
-          style={game.photo_url ? { backgroundImage: `url(${resolvePhotoUrl(game.photo_url)})` } : undefined}
+          style={hasCustomBanner(game) ? { backgroundImage: `url(${resolvePhotoUrl(game.photo_url)})` } : undefined}
         >
-          {!game.photo_url && (
+          {!hasCustomBanner(game) && (
             <span className="gdm-hero-placeholder">
               <SportIcon sport={game.sport} size={56} color="rgba(255,255,255,0.55)" />
             </span>
