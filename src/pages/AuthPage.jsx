@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import AuthForm from "../components/AuthPage/AuthForm";
 import OtpVerification from "../components/AuthPage/OtpVerif";
 import ProfileSetup from "../components/AuthPage/ProfileSetup";
+import ForgotPassword from "../components/AuthPage/ForgotPassword";
 
 const API = import.meta.env.VITE_API_URL;
 
 // Backend requires 8-20 chars, 1 upper, 1 lower, 1 number, 1 symbol
 const PASSWORD_RULE =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>_\-+=~`[\]/\\;']).{8,20}$/;
-// MUST BE UCF EMAIL
-const UCF_EMAIL = /^[a-zA-Z0-9._%+-]+@ucf\.edu$/i;
+// MUST BE UCF EMAIL — restricted to the NID format (two letters + six
+// digits), stricter than the backend's own check (any local part ending in
+// @ucf.edu). Keep AuthForm.jsx's copy of this pattern in sync.
+const UCF_EMAIL = /^[a-z]{2}\d{6}@ucf\.edu$/i;
 
 // Extract a readable API error ({ message } is a string OR array in Nest).
 function errorMessage(data, fallback) {
@@ -31,13 +34,16 @@ function makeTempUsername(first, last) {
 
 function AuthPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [mode, setMode] = useState("login"); // "login" or "register"
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [message, setMessage] = useState("");
+    // Seeded from router state (e.g. ChangePasswordPage redirects here with a
+    // "please log in again" note after a successful password change).
+    const [message, setMessage] = useState(location.state?.message || "");
 
     const [step, setStep] = useState("auth"); // "auth" | "verify" | "profile"
     const [otpCode, setOtpCode] = useState("");
@@ -45,6 +51,7 @@ function AuthPage() {
     const [sport, setSport] = useState("");
     const [pfpFile, setPfpFile] = useState(null);
     const [pendingUser, setPendingUser] = useState(null); // holds user/token between steps
+    const [forgotSubmitting, setForgotSubmitting] = useState(false);
 
     // HANDLES SUBMITTING THE USER BY CHECKING EMAIL AND PASSWORD regex
     async function handleSubmit(e) {
@@ -89,7 +96,26 @@ function AuthPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                setMessage(errorMessage(data, "Something went wrong"));
+                const msg = errorMessage(data, "Something went wrong");
+                setMessage(msg);
+                // A login blocked only because the account was never verified
+                // (e.g. the OTP send failed after an earlier registration attempt,
+                // see the register branch below) would otherwise dead-end here with
+                // no way back to the OTP screen — send a fresh code and take them
+                // there instead of leaving them stuck on a login error forever.
+                if (mode === "login" && /verify your email/i.test(msg)) {
+                    setStep("verify");
+                    fetch(`${API}/auth/send-code`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email }),
+                    })
+                        .then((codeRes) => codeRes.ok || codeRes.json())
+                        .then((codeData) => {
+                            if (codeData) setMessage(errorMessage(codeData, "Could not send verification code"));
+                        })
+                        .catch(() => setMessage("Could not send verification code"));
+                }
                 return;
             }
 
@@ -97,7 +123,13 @@ function AuthPage() {
             setPendingUser(data.user);
 
             if (mode === "register") {
-                // Email the 6-digit verification code, then move to the OTP step.
+                // The account now exists (pending) regardless of what happens next —
+                // always land on the OTP step so a failed send doesn't strand the
+                // user: going back to "auth" here would mean re-submitting register
+                // later just 409s on the email/username that already exists, with no
+                // way back to verification. "Resend code" on that screen retries the
+                // send.
+                setStep("verify");
                 const codeRes = await fetch(`${API}/auth/send-code`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -106,9 +138,7 @@ function AuthPage() {
                 if (!codeRes.ok) {
                     const codeData = await codeRes.json().catch(() => null);
                     setMessage(errorMessage(codeData, "Could not send verification code"));
-                    return;
                 }
-                setStep("verify");
             } else {
                 navigate("/posts", { state: { user: data.user } });
             }
@@ -156,6 +186,28 @@ function AuthPage() {
             }
         } catch (err) {
             setMessage("Could not resend code");
+        }
+    }
+
+    // FORGOT PASSWORD: emails a single-use reset link (POST /auth/forgot-password).
+    // The backend always answers with the same generic message whether or not the
+    // email is registered, so that's just shown as-is.
+    async function handleForgotPassword(e) {
+        e.preventDefault();
+        setMessage("");
+        setForgotSubmitting(true);
+        try {
+            const res = await fetch(`${API}/auth/forgot-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json().catch(() => null);
+            setMessage(errorMessage(data, res.ok ? "If that email exists, a reset link has been sent." : "Something went wrong"));
+        } catch (err) {
+            setMessage("Network error: is the API reachable?");
+        } finally {
+            setForgotSubmitting(false);
         }
     }
 
@@ -216,6 +268,22 @@ function AuthPage() {
         );
     }
 
+    if (step === "forgot") {
+        return (
+            <ForgotPassword
+                email={email}
+                onEmailChange={setEmail}
+                onSubmit={handleForgotPassword}
+                onBack={() => {
+                    setStep("auth");
+                    setMessage("");
+                }}
+                message={message}
+                submitting={forgotSubmitting}
+            />
+        );
+    }
+
     if (step === "profile") {
         return (
             <ProfileSetup
@@ -247,6 +315,10 @@ function AuthPage() {
             onConfirmPasswordChange={setConfirmPassword}
             onSubmit={handleSubmit}
             onToggleMode={toggleMode}
+            onForgotPassword={() => {
+                setMessage("");
+                setStep("forgot");
+            }}
         />
         // <OtpVerification
         //         email={email}

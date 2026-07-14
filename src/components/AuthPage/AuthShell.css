@@ -217,18 +217,34 @@
 @media (max-width: 1024px) {
     .su-auth {
         grid-template-columns: 1fr;
+        height: auto;        /* was locked to 100svh */
+        min-height: 100svh;
+        overflow: visible;   /* was hidden — this caused the clipping */
     }
 
     .su-hero {
-        display: none;
+        display: none !important;
     }
 
     .su-panel {
         border-left: none;
+        overflow: visible;   /* was overflow-y: auto, no longer needed */
+    }
+
+    .su-form-wrap {
+        min-height: auto;    /* was 100%, meaningless once height is auto */
+        padding: 40px 24px 56px;
     }
 
     .su-mobile-logo {
         display: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .su-name-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 }
 

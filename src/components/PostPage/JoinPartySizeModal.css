@@ -1,0 +1,42 @@
+.jps-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.jps-stepper-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid #d6e4d6;
+  background: #fafafa;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2f8f4e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jps-stepper-btn:disabled {
+  color: #ccc;
+  cursor: default;
+}
+
+.jps-stepper-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  min-width: 32px;
+  text-align: center;
+}
+
+.jps-error {
+  margin: -12px 0 16px;
+  color: #a81b1b;
+  font-size: 13px;
+  text-align: center;
+}

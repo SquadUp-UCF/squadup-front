@@ -66,17 +66,8 @@
   box-sizing: border-box;
 }
 
-.pgm-select {
-  cursor: pointer;
-}
-
 .pgm-custom-sport {
   margin-top: 10px;
-}
-
-.pgm-textarea {
-  resize: vertical;
-  min-height: 70px;
 }
 
 .pgm-hint {
@@ -115,4 +106,157 @@
 .pgm-submit:disabled {
   cursor: default;
   opacity: 0.7;
+}
+
+/* ── Editor variant: full-bleed banner hero + click-to-edit fields ──────── */
+/* Mirrors GameDetailModal's read layout (banner, then icon+text rows for
+   sport/location/time/players) but every row is a real input, just styled to
+   look plain until you interact with it. */
+
+.pgm-modal--editor {
+  padding: 0;
+}
+
+.pgm-modal--editor .pgm-form {
+  padding: 18px 28px 28px;
+}
+
+.pgm-hero-wrap {
+  position: relative;
+}
+
+.pgm-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(135deg, #2f8f4e 0%, #1f6b3e 100%);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.pgm-hero-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pgm-hero-prompt {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.pgm-hero-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pgm-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #999;
+}
+
+.pgm-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pgm-inline-input {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 4px 0;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1a1a1a;
+  border-bottom: 1.5px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.pgm-inline-input:focus {
+  outline: none;
+  border-bottom-color: #2f8f4e;
+}
+
+.pgm-inline-input::placeholder {
+  color: #999;
+}
+
+.pgm-inline-select {
+  cursor: pointer;
+}
+
+.pgm-inline-input--heading {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.pgm-inline-textarea {
+  resize: vertical;
+  min-height: 50px;
+  line-height: 1.5;
+}
+
+.pgm-meta-edit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.pgm-meta-edit-row .pgm-inline-row {
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.pgm-inline-input--number {
+  flex: 0 0 auto;
+  width: 32px;
+  text-align: center;
+}
+
+.pgm-meta-slash,
+.pgm-meta-label {
+  font-size: 13px;
+  color: #888;
+}
+
+.pgm-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
