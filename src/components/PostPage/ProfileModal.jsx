@@ -2,10 +2,10 @@
  * Modal for viewing/editing the authenticated user's profile.
  *
  * Layered on the same GET/PATCH `/users/me` + `/users/me/avatar` endpoints
- * PostsPage's login flow already uses. "Skill level per favorite sport" reuses
- * the schema's existing `preferred_positions` map (one free-text value per
- * sport) rather than adding a new field — the key is the favorited sport, the
- * value is the skill label ("Beginner"/"Intermediate"/"Pro").
+ * PostsPage's login flow already uses. "Skill level per favorite sport" is
+ * stored in the `skill_levels` map (keyed by sport slug, value is the skill
+ * label "Beginner"/"Intermediate"/"Pro"). Older profiles kept skill in the
+ * legacy `preferred_positions` map, so reads fall back to it.
  *
  * Password changes happen on a dedicated page (/change-password) rather than
  * inline here, since a successful change retires the current session (see
@@ -113,7 +113,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
         setFirstName(data.first_name || "");
         setLastName(data.last_name || "");
         setUsername(data.username || "");
-        setFavoriteSports(data.preferred_positions || {});
+        setFavoriteSports(data.skill_levels || data.preferred_positions || {});
       })
       .catch(() => {
         if (!cancelled) setLoadError("Could not load your profile.");
@@ -228,7 +228,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           username: username.trim(),
-          preferred_positions: favoriteSports,
+          skill_levels: favoriteSports,
         }),
       });
       const data = await res.json().catch(() => null);

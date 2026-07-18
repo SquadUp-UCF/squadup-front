@@ -4,8 +4,8 @@
  * Shows everything the card doesn't have room for: the full description, a
  * small map centered on the pin, the roster (fetched per-participant via
  * GET /users/:id since the game document only stores participant ids), each
- * player's skill level for this sport (reusing ProfileModal's
- * preferred_positions-as-skill-level convention), a notifications toggle, and
+ * player's skill level for this sport (from the `skill_levels` map, falling
+ * back to the legacy `preferred_positions`), a notifications toggle, and
  * the join/leave action.
  */
 import { useEffect, useState } from "react";
@@ -67,7 +67,7 @@ function PlayerRow({ userId, isHost, sport }) {
     };
   }, [userId]);
 
-  const skill = profile?.preferred_positions?.[sport];
+  const skill = profile?.skill_levels?.[sport] ?? profile?.preferred_positions?.[sport];
 
   return (
     <div className="gdm-player-row">

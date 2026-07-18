@@ -224,7 +224,7 @@ function AuthPage() {
         }
 
         const body = { username };
-        if (sport) body.preferred_positions = { [sport]: "" };
+        if (sport) body.skill_levels = { [sport]: "" };
 
         try {
             const res = await fetch(`${API}/users/me`, {
