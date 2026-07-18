@@ -17,9 +17,9 @@ import "./PostGameModal.css";
 import "./ConfirmModal.css";
 import "./ProfileModal.css";
 import { SportIcon, availableSports } from "../SportIcons";
+import { resolvePhotoUrl } from "../../utils/games";
 
 const API = import.meta.env.VITE_API_URL;
-const STATIC_BASE = API.replace(/\/api\/?$/, "");
 
 const SKILL_LEVELS = ["Beginner", "Intermediate", "Pro"];
 
@@ -92,6 +92,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
+  const [profileMessageOk, setProfileMessageOk] = useState(false);
 
   const [avatarUploading, setAvatarUploading] = useState(false);
 
@@ -151,6 +152,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
 
     setAvatarUploading(true);
     setProfileMessage("");
+    setProfileMessageOk(false);
     try {
       const body = new FormData();
       body.append("avatar", file);
@@ -213,6 +215,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
   async function handleSaveProfile(e) {
     e.preventDefault();
     setProfileMessage("");
+    setProfileMessageOk(false);
 
     if (username.trim().length < 3 || username.trim().length > 30) {
       setProfileMessage("Username must be 3-30 characters");
@@ -238,6 +241,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
       }
       setProfile(data);
       setProfileMessage("Profile updated.");
+      setProfileMessageOk(true);
       onSaved?.({
         name: `${data.first_name} ${data.last_name}`,
         username: data.username,
@@ -315,7 +319,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
                   <div className="pfm-avatar-wrap">
                     <label className="pfm-avatar" title="Change profile photo">
                       {profile?.profile_picture ? (
-                        <img src={`${STATIC_BASE}${profile.profile_picture}`} alt="Profile" />
+                        <img src={resolvePhotoUrl(profile.profile_picture)} alt="Profile" />
                       ) : (
                         <span className="pfm-avatar-initial">{initial}</span>
                       )}
@@ -421,7 +425,9 @@ export default function ProfileModal({ user, onClose, onSaved }) {
                     </div>
                   </div>
 
-                  {profileMessage && <p className="pgm-error">{profileMessage}</p>}
+                  {profileMessage && (
+                    <p className={profileMessageOk ? "pgm-success" : "pgm-error"}>{profileMessage}</p>
+                  )}
 
                   <button type="submit" disabled={savingProfile} className="pgm-submit">
                     {savingProfile ? "Saving…" : "Save changes"}

@@ -1,16 +1,18 @@
 /**
  * A small interactive map used inside the "Post a game" modal to pick where a
- * game is happening. It opens centered on the user's current position so they
- * can look around nearby, then click the map (or drag the pin) to place the
+ * game is happening. Games can only be hosted within
+ * `MAX_GAME_CREATION_RADIUS_MILES` of UCF, so the map always opens centered
+ * on campus (never the host's own location) and is bounded so it can't be
+ * panned outside that radius. Click the map (or drag the pin) to place the
  * exact spot. The chosen point is reported back as [lat, lng].
  */
-import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import "./LocationPicker.css";
 import L from 'leaflet';
+import { UCF_CENTER, MAX_GAME_CREATION_RADIUS_MILES, getBoundsForRadius } from '../../utils/games';
 
-const DEFAULT_CENTER = [28.6024, -81.2001]; // UCF
+const CREATE_BOUNDS = getBoundsForRadius(UCF_CENTER, MAX_GAME_CREATION_RADIUS_MILES);
 
 // Emoji pin whose tip sits at the marker's coordinate (bottom-center anchor).
 const pinIcon = L.divIcon({
@@ -38,31 +40,8 @@ function ClickToPlace({ onPick }) {
   return null;
 }
 
-// Recenters the map on the user's position once it becomes available (one time),
-// and exposes a manual recenter via a ref the parent button can call.
-function Centerer({ userPosition, controlRef }) {
-  const map = useMap();
-  const hasCentered = useRef(false);
-
-  useEffect(() => {
-    if (userPosition && !hasCentered.current) {
-      map.setView(userPosition, 15);
-      hasCentered.current = true;
-    }
-  }, [userPosition, map]);
-
-  useEffect(() => {
-    controlRef.current = () => {
-      if (userPosition) map.setView(userPosition, 15);
-    };
-  }, [userPosition, map, controlRef]);
-
-  return null;
-}
-
 export default function LocationPicker({ userPosition, value, onPick }) {
-  const recenterRef = useRef(null);
-  const center = value || userPosition || DEFAULT_CENTER;
+  const center = value || UCF_CENTER;
 
   return (
     <div className="lp-container">
@@ -71,14 +50,18 @@ export default function LocationPicker({ userPosition, value, onPick }) {
           center={center}
           zoom={15}
           scrollWheelZoom={true}
+          maxBounds={CREATE_BOUNDS}
+          maxBoundsViscosity={1.0}
+          minZoom={12}
+          maxZoom={20}
           className="lp-map"
         >
           <TileLayer
             attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={20}
           />
 
-          <Centerer userPosition={userPosition} controlRef={recenterRef} />
           <ClickToPlace onPick={onPick} />
 
           {userPosition && <Marker position={userPosition} icon={youAreHereIcon} />}
@@ -98,16 +81,6 @@ export default function LocationPicker({ userPosition, value, onPick }) {
           )}
         </MapContainer>
       </div>
-
-      {userPosition && (
-        <button
-          type="button"
-          onClick={() => recenterRef.current && recenterRef.current()}
-          className="lp-recenter-btn"
-        >
-          My location
-        </button>
-      )}
     </div>
   );
 }

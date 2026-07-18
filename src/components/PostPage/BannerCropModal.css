@@ -1,0 +1,132 @@
+.bcm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 2100;
+}
+
+.bcm-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bcm-title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: #1a1a1a;
+  align-self: flex-start;
+}
+
+.bcm-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #666;
+  align-self: flex-start;
+}
+
+.bcm-stage {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 7 / 5;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #1a1a1a;
+  touch-action: none;
+  cursor: grab;
+}
+
+.bcm-stage:active {
+  cursor: grabbing;
+}
+
+.bcm-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* The "spotlight" trick: an oversized box-shadow on the crop window fills the
+   rest of the (clipped, position:relative) stage with a dark tint, leaving
+   only this rect clear — a live preview of exactly what will be kept. */
+.bcm-crop-window {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.bcm-zoom {
+  width: 100%;
+  margin-top: 16px;
+  accent-color: #2f8f4e;
+}
+
+.bcm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.bcm-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.bcm-btn-cancel {
+  background: #f1f1f1;
+  color: #333;
+}
+
+.bcm-btn-confirm {
+  background: #2f8f4e;
+  color: #ffffff;
+}
+
+.bcm-btn-confirm:disabled {
+  background: #a8d3b6;
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .bcm-overlay {
+    padding: 10px;
+  }
+
+  .bcm-modal {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .bcm-actions {
+    gap: 8px;
+  }
+
+  .bcm-btn {
+    flex: 1;
+    padding: 10px 0;
+  }
+}

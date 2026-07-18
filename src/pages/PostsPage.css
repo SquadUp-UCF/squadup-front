@@ -169,6 +169,11 @@
   cursor: pointer;
 }
 
+/* Posts filter bar */
+.pp-filter-wrap {
+  padding: 0 32px 16px;
+}
+
 /* Narrow-screen toggle */
 .pp-toggle-wrap {
   padding: 0 32px 16px;
@@ -244,4 +249,76 @@
   min-width: 0;
   position: sticky;
   top: 24px;
+}
+
+/* Below this the JS layout (useIsNarrow) already switches to the stacked
+   swipe view — the fixed desktop paddings/sizes below just get cramped
+   rather than adapting, so scale them down to match. */
+@media (max-width: 899px) {
+  .pp-nav {
+    padding: 14px 20px;
+  }
+
+  .pp-hero {
+    margin: 0 20px 20px;
+    padding: 24px;
+  }
+
+  .pp-hero-title {
+    font-size: 28px;
+  }
+
+  .pp-filter-wrap {
+    padding: 0 20px 14px;
+  }
+
+  .pp-toggle-wrap {
+    padding: 0 20px 14px;
+  }
+
+  .pp-mobile-content {
+    padding: 0 20px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pp-nav {
+    padding: 12px 16px;
+  }
+
+  .pp-brand-name {
+    font-size: 18px;
+  }
+
+  .pp-post-btn {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .pp-hero {
+    margin: 0 16px 16px;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .pp-hero-title {
+    font-size: 22px;
+    margin: 8px 0 6px;
+  }
+
+  .pp-hero-btn {
+    width: 100%;
+  }
+
+  .pp-filter-wrap {
+    padding: 0 16px 12px;
+  }
+
+  .pp-toggle-wrap {
+    padding: 0 16px 12px;
+  }
+
+  .pp-mobile-content {
+    padding: 0 16px 20px;
+  }
 }

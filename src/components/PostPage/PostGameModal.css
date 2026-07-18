@@ -91,6 +91,13 @@
   font-size: 14px;
 }
 
+.pgm-success {
+  margin: 0;
+  color: #1b8a3d;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .pgm-submit {
   background: #2f8f4e;
   color: #ffffff;
