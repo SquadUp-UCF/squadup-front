@@ -4,23 +4,79 @@
  */
 
 const API = import.meta.env.VITE_API_URL;
-const STATIC_BASE = API.replace(/\/api\/?$/, "");
 
 // A game runs for roughly this long; used to decide when it stops being "live".
 export const LIVE_WINDOW_MS = 2 * 60 * 60 * 1000;
 
+// This is a UCF-only app: the discovery map always anchors here (never on the
+// viewer's live location), and it's the reference point new games are capped
+// to being created near.
+export const UCF_CENTER = [28.6024, -81.2001];
+
+// A host can only drop a game pin within this many miles of campus.
+export const MAX_GAME_CREATION_RADIUS_MILES = 5;
+
+export const METERS_PER_MILE = 1609.344;
+
+// The discovery map's "range" (view radius) can't be zoomed out past the same
+// 5-mile cap games are confined to, and can be zoomed in as tight as 10 meters.
+export const MAX_VIEW_RADIUS_MILES = MAX_GAME_CREATION_RADIUS_MILES;
+export const MIN_VIEW_RADIUS_MILES = 10 / METERS_PER_MILE;
+
+// The map no longer hides games outside the chosen range (see PostsPage's
+// visibleGames), so there's no reason to default the slider to the widest
+// possible view — a tighter starting zoom reads better and is still just a
+// starting point the slider can widen back out to MAX_VIEW_RADIUS_MILES.
+export const DEFAULT_VIEW_RADIUS_MILES = 0.3;
+
+export function milesToMeters(miles) {
+  return miles * METERS_PER_MILE;
+}
+
+export function metersToMiles(meters) {
+  return meters / METERS_PER_MILE;
+}
+
+/** Human label for a radius, in meters below 0.1mi and miles above it. */
+export function formatRadius(miles) {
+  const meters = milesToMeters(miles);
+  if (miles < 0.1) {
+    return `${Math.round(meters)} m`;
+  }
+  return `${miles.toFixed(1)} mi`;
+}
+
+/** Roughly converts a mile radius into a lat/lng bounding box around a center point. */
+export function getBoundsForRadius(center, radiusMiles) {
+  const [lat, lng] = center;
+  const milesPerDegreeLat = 69;
+  const milesPerDegreeLng = 69 * Math.cos((lat * Math.PI) / 180);
+  const latDelta = radiusMiles / milesPerDegreeLat;
+  const lngDelta = radiusMiles / milesPerDegreeLng;
+  return [
+    [lat - latDelta, lng - lngDelta],
+    [lat + latDelta, lng + lngDelta],
+  ];
+}
+
 /**
- * `game.photo_url` is stored as a path relative to the API origin (e.g.
- * `/sports/soccer.svg` or `/uploads/game-banners/<id>.jpg`), not the
- * frontend's — resolving it as-is only works when both are deployed behind
- * the same origin. Prefix it with the API's static origin so it also
- * resolves correctly when the frontend is served separately (e.g. local dev,
- * where the app runs on a different port than the API).
+ * `game.photo_url` / a user's `profile_picture` is stored as a path relative
+ * to the API origin (e.g. `/sports/soccer.svg` or
+ * `/uploads/game-banners/<id>.jpg`), not the frontend's — resolving it as-is
+ * only works when both are deployed behind the same origin.
+ *
+ * In production the API sits behind a reverse proxy that forwards only
+ * `/api/*` to it (see squadup-api's main.ts) — a bare `${origin}/uploads/...`
+ * URL 404s there even though it works in local dev. The backend also mounts
+ * the same static files under `/api/uploads` and `/api/sports` in every
+ * environment specifically for this reason, so resolving through the API
+ * base (which already ends in `/api`) instead of stripping it off is what
+ * makes images load in both dev and prod.
  */
 export function resolvePhotoUrl(photoUrl) {
   if (!photoUrl) return null;
   if (/^https?:\/\//i.test(photoUrl)) return photoUrl;
-  return `${STATIC_BASE}${photoUrl}`;
+  return `${API}${photoUrl}`;
 }
 
 /**
@@ -33,6 +89,22 @@ export function resolvePhotoUrl(photoUrl) {
  */
 export function hasCustomBanner(game) {
   return Boolean(game.photo_url) && !game.photo_url.startsWith("/sports/");
+}
+
+// Mirrors squadup-api's `GameSkillLevel` enum (games/schemas/game.schema.ts) —
+// "all" means the host welcomes any skill, same as leaving it unset.
+export const GAME_SKILL_LEVELS = ["beginner", "intermediate", "pro"];
+
+export function skillLabel(level) {
+  if (!level || level === "all") return "All levels";
+  return level.charAt(0).toUpperCase() + level.slice(1);
+}
+
+/** Whether a game (given its own skill_level) matches a viewer's filter pick. */
+export function matchesSkillFilter(game, skillFilter) {
+  if (!skillFilter || skillFilter === "all") return true;
+  const level = (game.skill_level || "all").toLowerCase();
+  return level === "all" || level === skillFilter;
 }
 
 export const STATUS_META = {

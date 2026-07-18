@@ -4,7 +4,20 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import "./MapComponent.css";
 import L from 'leaflet';
-import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner } from '../../utils/games';
+import {
+  statusMeta,
+  formatWhen,
+  activeCount,
+  isLive,
+  resolvePhotoUrl,
+  hasCustomBanner,
+  UCF_CENTER,
+  getBoundsForRadius,
+  formatRadius,
+  MIN_VIEW_RADIUS_MILES,
+  MAX_VIEW_RADIUS_MILES,
+  DEFAULT_VIEW_RADIUS_MILES,
+} from '../../utils/games';
 import { SportIcon } from '../SportIcons';
 import { MdNearMe } from 'react-icons/md';
 import { FiMapPin, FiClock, FiUsers } from 'react-icons/fi';
@@ -165,27 +178,27 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId, onLeave, leavin
   );
 }
 
-const defaultPosition = [51.505, -0.09];
+const DEFAULT_RADIUS = DEFAULT_VIEW_RADIUS_MILES;
 
-// The range slider maps a viewing radius (miles) to a zoom level: a wider range
-// zooms out, a tighter range zooms in. Base 16 makes 5 mi land on zoom 14.
-function zoomForRadius(radiusMiles) {
-  return Math.max(10, Math.min(16, Math.round(16 - Math.log2(radiusMiles))));
+// The pannable area is always exactly the 5-mile UCF box — it never depends on
+// the "range" slider, so it's computed once rather than re-derived on the fly.
+const MAX_PAN_BOUNDS = getBoundsForRadius(UCF_CENTER, MAX_VIEW_RADIUS_MILES);
+
+// The range slider's underlying value spans 10m-5mi, which is too wide a ratio
+// for a linear control to give useful precision at the small end — a log scale
+// keeps every part of the slider meaningfully draggable.
+const SLIDER_STEPS = 1000;
+const MIN_LOG = Math.log(MIN_VIEW_RADIUS_MILES);
+const MAX_LOG = Math.log(MAX_VIEW_RADIUS_MILES);
+
+function sliderPosForRadius(miles) {
+  const t = (Math.log(miles) - MIN_LOG) / (MAX_LOG - MIN_LOG);
+  return Math.round(Math.min(1, Math.max(0, t)) * SLIDER_STEPS);
 }
-const DEFAULT_RADIUS = 5;
-const DEFAULT_ZOOM = zoomForRadius(DEFAULT_RADIUS); // 14
 
-// Roughly converts a mile radius into a lat/lng bounding box around a center point
-function getBoundsForRadius(center, radiusMiles) {
-  const [lat, lng] = center;
-  const milesPerDegreeLat = 69;
-  const milesPerDegreeLng = 69 * Math.cos((lat * Math.PI) / 180);
-  const latDelta = radiusMiles / milesPerDegreeLat;
-  const lngDelta = radiusMiles / milesPerDegreeLng;
-  return [
-    [lat - latDelta, lng - lngDelta],
-    [lat + latDelta, lng + lngDelta],
-  ];
+function radiusForSliderPos(pos) {
+  const t = pos / SLIDER_STEPS;
+  return Math.exp(MIN_LOG + t * (MAX_LOG - MIN_LOG));
 }
 
 function MapRefSetter({ mapRef }) {
@@ -233,42 +246,30 @@ export default function MapComponent({
   leavingId,
 }) {
   const mapRef = useRef(null);
-  // Starts true when userPosition is already known — MapContainer's initial
-  // `center` prop above already placed it correctly, so the correction effect
-  // below only needs to run when geolocation resolves *after* this mounts.
-  const hasCenteredOnUser = useRef(Boolean(userPosition));
 
-  // Once we have both the map instance AND the user's position, snap to it (one time)
+  // Zoom to exactly fit the chosen "range" around UCF — fitBounds asks Leaflet
+  // for the precise zoom level itself, which matters a lot more now that range
+  // can be as tight as 10 meters (a fixed log2-based formula couldn't keep up
+  // across a 10m-5mi span). This also drives the *initial* zoom once the map
+  // instance is ready, since MapRefSetter's effect (a descendant) commits
+  // before this one.
   useEffect(() => {
-    if (userPosition && mapRef.current && !hasCenteredOnUser.current) {
-      mapRef.current.setView(userPosition, zoomForRadius(radiusMiles));
-      hasCenteredOnUser.current = true;
-    }
-  }, [userPosition, radiusMiles]);
-
-  // Keep the map's bounds locked to the chosen radius around the user
-  useEffect(() => {
-    const center = userPosition || defaultPosition;
     if (mapRef.current) {
-      const bounds = getBoundsForRadius(center, radiusMiles);
-      mapRef.current.setMaxBounds(bounds);
+      mapRef.current.fitBounds(getBoundsForRadius(UCF_CENTER, radiusMiles));
     }
-  }, [userPosition, radiusMiles]);
+  }, [radiusMiles]);
 
   function handleRecenter() {
-    if (mapRef.current && userPosition) {
-      mapRef.current.setView(userPosition, zoomForRadius(radiusMiles));
+    if (mapRef.current) {
+      mapRef.current.fitBounds(getBoundsForRadius(UCF_CENTER, radiusMiles));
     }
   }
 
-  // Slider drives both the pannable range (maxBounds, via the effect above) and
-  // the zoom level: wider range → zoom out, tighter range → zoom in.
+  // The pannable area is fixed at 5 miles (MAX_PAN_BOUNDS, a constant) — the
+  // slider only ever changes the camera's zoom, never which games exist on
+  // the map or how far you can pan.
   function handleRangeChange(e) {
-    const r = Number(e.target.value);
-    onRadiusChange?.(r);
-    if (mapRef.current) {
-      mapRef.current.setZoom(zoomForRadius(r));
-    }
+    onRadiusChange?.(radiusForSliderPos(Number(e.target.value)));
   }
 
   const gamesWithCoords = games.filter(
@@ -278,14 +279,23 @@ export default function MapComponent({
   return (
     <div className="map-container-wrap" style={{ height }}>
       <MapContainer
-        // If the user's position is already known when this mounts (e.g. after
-        // the mobile/desktop layout swap remounts this component), start there
-        // directly instead of always flashing to the hardcoded London default.
-        center={userPosition || defaultPosition}
-        zoom={userPosition ? zoomForRadius(radiusMiles) : DEFAULT_ZOOM}
+        // Always opens locked onto UCF — never the viewer's own location.
+        // Corrected precisely to DEFAULT_RADIUS by the fitBounds effect right
+        // after mount; this is just a close starting guess to avoid a visible
+        // zoom jump.
+        center={UCF_CENTER}
+        zoom={17}
         minZoom={9}
+        maxZoom={20}
+        // Zoom is exclusively driven by the range slider (via fitBounds) —
+        // every other way to change it is turned off here.
         zoomControl={false}
-        scrollWheelZoom={true}
+        scrollWheelZoom={false}
+        doubleClickZoom={false}
+        touchZoom={false}
+        boxZoom={false}
+        keyboard={false}
+        maxBounds={MAX_PAN_BOUNDS}
         maxBoundsViscosity={1.0}
         className="map-leaflet"
       >
@@ -293,6 +303,7 @@ export default function MapComponent({
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
           subdomains="abcd"
+          maxZoom={20}
         />
 
         <MapRefSetter mapRef={mapRef} />
@@ -323,8 +334,8 @@ export default function MapComponent({
       {/* Recenter — a single navigation-arrow button */}
       <button
         onClick={handleRecenter}
-        title="Recenter on my location"
-        aria-label="Recenter on my location"
+        title="Recenter on UCF"
+        aria-label="Recenter on UCF"
         className="map-recenter-btn"
       >
         <MdNearMe size={20} color="#1F6B3E" />
@@ -338,14 +349,14 @@ export default function MapComponent({
         <input
           className="map-range"
           type="range"
-          min={1}
-          max={25}
+          min={0}
+          max={SLIDER_STEPS}
           step={1}
-          value={radiusMiles}
+          value={sliderPosForRadius(radiusMiles)}
           onChange={handleRangeChange}
         />
         <span className="map-range-value">
-          {radiusMiles} mi
+          {formatRadius(radiusMiles)}
         </span>
       </div>
     </div>

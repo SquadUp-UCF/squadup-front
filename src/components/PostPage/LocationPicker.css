@@ -13,18 +13,3 @@
   height: 100%;
   width: 100%;
 }
-
-.lp-recenter-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 1000;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid #D6E4D6;
-  background: rgba(255, 255, 255, 0.9);
-  font-size: 12px;
-  font-weight: 600;
-  color: #1F6B3E;
-  cursor: pointer;
-}

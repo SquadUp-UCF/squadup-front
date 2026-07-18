@@ -7,7 +7,7 @@ import { useState } from "react";
 import "./PostsList.css";
 import { FiMapPin, FiClock, FiUsers, FiHeart, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { SportIcon } from "../SportIcons";
-import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
+import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner, skillLabel } from "../../utils/games";
 
 // A game created within this window shows a "NEW" badge.
 const NEW_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -95,6 +95,9 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
           <SportIcon sport={game.sport} size={16} color={meta.color} />
           {sportLabel(game.sport)}
         </span>
+        {game.skill_level && game.skill_level !== "all" && (
+          <span className="pl-skill-pill">{skillLabel(game.skill_level)}</span>
+        )}
 
         <h3 className="pl-title">
           <FiMapPin size={18} color="#2F8F4E" className="pl-title-pin" />

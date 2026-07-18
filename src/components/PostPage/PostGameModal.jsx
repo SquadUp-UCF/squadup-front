@@ -15,8 +15,17 @@ import { useEffect, useState } from "react";
 import { FiMapPin, FiClock, FiUsers } from "react-icons/fi";
 import "./PostGameModal.css";
 import LocationPicker from "./LocationPicker";
+import BannerCropModal from "./BannerCropModal";
 import { SportIcon, availableSports } from "../SportIcons";
-import { resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
+import {
+  resolvePhotoUrl,
+  hasCustomBanner,
+  milesBetween,
+  UCF_CENTER,
+  MAX_GAME_CREATION_RADIUS_MILES,
+  GAME_SKILL_LEVELS,
+  skillLabel,
+} from "../../utils/games";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -59,6 +68,7 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
   );
   const [minPlayers, setMinPlayers] = useState(game?.min_players ?? 2);
   const [maxPlayers, setMaxPlayers] = useState(game?.max_players ?? 10);
+  const [skillLevel, setSkillLevel] = useState(game?.skill_level || "all");
   const [userPosition, setUserPosition] = useState(null); // where the user is now
   const [picked, setPicked] = useState(
     game && typeof game.latitude === "number" ? [game.latitude, game.longitude] : null
@@ -72,6 +82,7 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
   // the next time someone clicks it and picks a new image.
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
+  const [cropFile, setCropFile] = useState(null); // raw picked file, awaiting the crop editor
   const existingBannerUrl = game && hasCustomBanner(game) ? resolvePhotoUrl(game.photo_url) : null;
   const bannerUrl = bannerPreview || existingBannerUrl;
 
@@ -87,7 +98,11 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
 
   function handleBannerChange(file) {
     if (!file) return;
-    setBannerFile(file);
+    // Opens the crop editor first — `bannerFile` (what actually gets
+    // uploaded) is only set once the host confirms a crop, already resized
+    // and compressed to a fixed resolution regardless of the source photo's
+    // size.
+    setCropFile(file);
   }
 
   useEffect(() => {
@@ -96,8 +111,13 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
       (pos) => {
         const here = [pos.coords.latitude, pos.coords.longitude];
         setUserPosition(here);
-        // Default the pin to the user's spot until they move it.
-        setPicked((prev) => prev || here);
+        // Default the pin to the user's spot, but only when that's actually a
+        // legal game location — games are UCF-only, so a host browsing from
+        // across town/state shouldn't get a pin silently placed somewhere
+        // that'll fail the distance check the moment they hit submit.
+        if (milesBetween(UCF_CENTER, here) <= MAX_GAME_CREATION_RADIUS_MILES) {
+          setPicked((prev) => prev || here);
+        }
       },
       () => {}
     );
@@ -113,6 +133,10 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
     }
     if (!picked) {
       setError("Pick the game's spot on the map.");
+      return;
+    }
+    if (milesBetween(UCF_CENTER, picked) > MAX_GAME_CREATION_RADIUS_MILES) {
+      setError(`Games can only be created within ${MAX_GAME_CREATION_RADIUS_MILES} miles of UCF.`);
       return;
     }
     if (Number(minPlayers) > Number(maxPlayers)) {
@@ -149,6 +173,7 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
           longitude,
           min_players: Number(minPlayers),
           max_players: Number(maxPlayers),
+          skill_level: skillLevel,
         }),
       });
       let data = await res.json().catch(() => null);
@@ -247,6 +272,22 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
           )}
 
           <div className="pgm-inline-row">
+            <FiUsers size={18} color="#1F6B3E" />
+            <select
+              className="pgm-inline-input pgm-inline-select"
+              value={skillLevel}
+              onChange={(e) => setSkillLevel(e.target.value)}
+            >
+              <option value="all">Open to all skill levels</option>
+              {GAME_SKILL_LEVELS.map((level) => (
+                <option key={level} value={level}>
+                  {skillLabel(level)} only
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="pgm-inline-row">
             <FiMapPin size={18} color="#2F8F4E" />
             <input
               className="pgm-inline-input pgm-inline-input--heading"
@@ -311,6 +352,17 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
           </button>
         </form>
       </div>
+
+      {cropFile && (
+        <BannerCropModal
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onConfirm={(croppedFile) => {
+            setBannerFile(croppedFile);
+            setCropFile(null);
+          }}
+        />
+      )}
     </div>
   );
 }

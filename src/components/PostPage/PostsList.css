@@ -58,6 +58,18 @@
   text-transform: capitalize;
 }
 
+.pl-skill-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  margin-left: 6px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #EFEAFB;
+  color: #5B3FA8;
+}
+
 .pl-title {
   margin: 12px 0 10px;
   font-size: 20px;

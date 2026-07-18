@@ -8,13 +8,19 @@ import ProfileModal from "../components/PostPage/ProfileModal";
 import GameDetailModal from "../components/PostPage/GameDetailModal";
 import JoinPartySizeModal from "../components/PostPage/JoinPartySizeModal";
 import Logo from "../components/Logo";
-import { isActive, milesBetween } from "../utils/games";
+import {
+  isActive,
+  milesBetween,
+  resolvePhotoUrl,
+  DEFAULT_VIEW_RADIUS_MILES,
+  matchesSkillFilter,
+} from "../utils/games";
+import PostsFilterBar from "../components/PostPage/PostsFilterBar";
 import "./PostsPage.css";
 
-const DEFAULT_RADIUS = 5;
+const DEFAULT_RADIUS = DEFAULT_VIEW_RADIUS_MILES;
 
 const API = import.meta.env.VITE_API_URL;
-const STATIC_BASE = API.replace(/\/api\/?$/, "");
 const NARROW_BREAKPOINT = 900;
 
 // Tracks whether the viewport is below the breakpoint where the layout collapses
@@ -106,6 +112,13 @@ function PostsPage() {
   const [joinError, setJoinError] = useState("");
   const [userPosition, setUserPosition] = useState(null); // [lat, lng] or null
   const [radiusMiles, setRadiusMiles] = useState(DEFAULT_RADIUS);
+
+  // Posts filter bar — all client-side over the fetched `games`. "Range" here
+  // is distance from the viewer's own device, distinct from the map's
+  // UCF-anchored "range" slider (radiusMiles above).
+  const [sportFilter, setSportFilter] = useState("all");
+  const [skillFilter, setSkillFilter] = useState("all");
+  const [rangeFilter, setRangeFilter] = useState(null); // miles, or null for "any"
 
   // Find the user once so we can filter posts to those within the chosen range.
   useEffect(() => {
@@ -255,17 +268,21 @@ function PostsPage() {
   const selectedGame = games.find((g) => g._id === selectedGameId) || null;
   const joinTarget = games.find((g) => g._id === joinTargetId) || null;
 
-  // Only show games within the selected range of the user. Without a known
-  // location we can't measure distance, so everything is shown.
+  // The map's own "range" slider is purely a zoom control now — it no longer
+  // hides games (see MapComponent). All active games are shown; only the
+  // filter bar's sport/skill/range-from-you picks narrow what's visible.
   const visibleGames = useMemo(() => {
-    if (!userPosition) return games;
-    return games.filter(
-      (g) =>
-        typeof g.latitude === "number" &&
-        typeof g.longitude === "number" &&
-        milesBetween(userPosition, [g.latitude, g.longitude]) <= radiusMiles
-    );
-  }, [games, userPosition, radiusMiles]);
+    return games.filter((g) => {
+      if (typeof g.latitude !== "number" || typeof g.longitude !== "number") return false;
+      if (sportFilter !== "all" && (g.sport || "").toLowerCase() !== sportFilter) return false;
+      if (!matchesSkillFilter(g, skillFilter)) return false;
+      if (rangeFilter !== null) {
+        if (!userPosition) return false;
+        if (milesBetween(userPosition, [g.latitude, g.longitude]) > rangeFilter) return false;
+      }
+      return true;
+    });
+  }, [games, sportFilter, skillFilter, rangeFilter, userPosition]);
 
   const postsPanel = (
     <PostsList
@@ -327,7 +344,7 @@ function PostsPage() {
               className="pp-avatar"
             >
               {profile?.profile_picture ? (
-                <img src={`${STATIC_BASE}${profile.profile_picture}`} alt="" className="pp-avatar-img" />
+                <img src={resolvePhotoUrl(profile.profile_picture)} alt="" className="pp-avatar-img" />
               ) : profile?.username ? (
                 profile.username.slice(0, 2).toUpperCase()
               ) : (
@@ -385,6 +402,19 @@ function PostsPage() {
         >
           Post a game
         </button>
+      </div>
+
+      {/* Filters — apply to both the feed and the map, since they share visibleGames */}
+      <div className="pp-filter-wrap">
+        <PostsFilterBar
+          sportFilter={sportFilter}
+          onSportFilterChange={setSportFilter}
+          skillFilter={skillFilter}
+          onSkillFilterChange={setSkillFilter}
+          rangeFilter={rangeFilter}
+          onRangeFilterChange={setRangeFilter}
+          hasUserPosition={Boolean(userPosition)}
+        />
       </div>
 
       {/* Narrow-screen toggle between the posts feed and the map */}

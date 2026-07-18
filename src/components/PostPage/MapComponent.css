@@ -64,6 +64,30 @@
   text-align: right;
 }
 
+/* On a narrow phone the map container itself is only ~280-320px wide (page
+   padding eats the rest) — the full-size panel (150px slider + label + value
+   + padding) is wider than that and runs off the right edge, which was
+   pushing the whole page into horizontal scroll. Shrink it to fit. */
+@media (max-width: 480px) {
+  .map-range-panel {
+    left: 8px;
+    bottom: 12px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .map-range-panel .map-range {
+    width: 90px;
+  }
+
+  .map-recenter-btn {
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* ----- Popup card ----- */
 .map-popup-card {
   font-family: sans-serif;
