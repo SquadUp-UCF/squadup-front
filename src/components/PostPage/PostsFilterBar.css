@@ -1,9 +1,110 @@
-.pfb-bar {
+.pfb-wrap {
+  margin-bottom: 16px;
+}
+
+/* ── Toolbar: "Filter" (left) / "Sort" (right) — plain icon+text buttons ── */
+
+.pfb-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pfb-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  padding: 4px 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.pfb-toolbar-btn--active {
+  color: #1f6b3e;
+}
+
+.pfb-filter-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1f6b3e;
+}
+
+.pfb-filter-btn {
+  color: #1f6b3e;
+}
+
+.pfb-sort-icon {
+  transition: transform 0.15s ease;
+}
+
+/* ── Sort pills: Distance / Most Recent / Player Count ───────────────────── */
+
+.pfb-pills {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.pfb-pill {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #e4f3e8;
+  color: #1f6b3e;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pfb-pill--active {
+  background: #1b7a32;
+  color: #ffffff;
+}
+
+.pfb-pill:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Sort panel: revealed by the "Sort" toggle, as a floating dropdown ────
+   anchored under the button (same pattern as the notifications bell's
+   dropdown) rather than an inline block that pushes the rest of the page
+   down. */
+
+.pfb-sort-wrap {
+  position: relative;
+}
+
+.pfb-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.pfb-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 2001;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 16px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .pfb-field {
@@ -76,7 +177,7 @@
 }
 
 @media (max-width: 480px) {
-  .pfb-bar {
+  .pfb-panel {
     gap: 10px;
   }
 

@@ -167,6 +167,16 @@ export function isLive(game, now = Date.now()) {
   return start <= now && now <= start + LIVE_WINDOW_MS;
 }
 
+/**
+ * Whether a game's start time has already passed — mirrors squadup-api's own
+ * `join()` check ("Game has already started"), so the UI can disable the
+ * join button proactively instead of only finding out from a failed request.
+ */
+export function hasStarted(game, now = Date.now()) {
+  const start = new Date(game.start_time).getTime();
+  return !Number.isNaN(start) && start <= now;
+}
+
 /** Great-circle distance in miles between two [lat, lng] points (haversine). */
 export function milesBetween([lat1, lng1], [lat2, lng2]) {
   const R = 3958.8; // Earth radius in miles

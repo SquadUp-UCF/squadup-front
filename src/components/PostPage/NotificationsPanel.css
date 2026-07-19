@@ -1,0 +1,113 @@
+.pp-notif-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  /* Centered under the bell rather than anchored to either edge — unlike the
+     avatar menu (which sits at the far-right edge, so right:0 works), the
+     bell sits mid-nav, so anchoring to either side alone can push a 340px
+     panel past the opposite edge of the viewport on narrow screens. */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2001;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pp-notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.pp-notif-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.pp-notif-clear {
+  background: none;
+  border: none;
+  color: #2f8f4e;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pp-notif-clear:hover {
+  text-decoration: underline;
+}
+
+.pp-notif-list {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.pp-notif-status {
+  padding: 24px 16px;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+}
+
+.pp-notif-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.pp-notif-row:last-child {
+  border-bottom: none;
+}
+
+.pp-notif-row--unread {
+  background: #f4faf5;
+}
+
+.pp-notif-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pp-notif-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pp-notif-row-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.pp-notif-row-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.pp-notif-time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+}

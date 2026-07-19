@@ -1,0 +1,69 @@
+/* Reuses ConfirmModal's cm- overlay/dialog/actions; only the ratee list and
+   thumb buttons get their own rm- rules. */
+
+.rm-dialog {
+  max-width: 380px;
+}
+
+.rm-empty {
+  color: #888;
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+.rm-list {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.rm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.rm-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex: 1;
+  margin-right: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rm-thumbs {
+  display: flex;
+  gap: 8px;
+}
+
+.rm-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1.5px solid #d6e4d6;
+  background: #fafafa;
+  color: #555;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.rm-thumb--up-active {
+  background: #2f8f4e;
+  border-color: #2f8f4e;
+  color: #ffffff;
+}
+
+.rm-thumb--down-active {
+  background: #c81e1e;
+  border-color: #c81e1e;
+  color: #ffffff;
+}

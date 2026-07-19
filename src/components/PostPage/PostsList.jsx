@@ -3,11 +3,11 @@
  * image-topped card with a join-progress bar; the whole thing is driven by
  * props so the parent (PostsPage) owns the data and list + map stay in sync.
  */
-import { useState } from "react";
 import "./PostsList.css";
 import { FiMapPin, FiClock, FiUsers, FiHeart, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { SportIcon } from "../SportIcons";
-import { statusMeta, formatWhen, activeCount, isLive, resolvePhotoUrl, hasCustomBanner, skillLabel } from "../../utils/games";
+import { useSavedGames } from "../../contexts/SavedGamesContext";
+import { statusMeta, formatWhen, activeCount, isLive, hasStarted, resolvePhotoUrl, hasCustomBanner, skillLabel } from "../../utils/games";
 
 // A game created within this window shows a "NEW" badge.
 const NEW_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -17,7 +17,8 @@ function sportLabel(sport) {
 }
 
 function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, onEdit, onDelete, deletingId, onSelect }) {
-  const [liked, setLiked] = useState(false);
+  const { isSaved, toggleSaved } = useSavedGames();
+  const liked = isSaved(game._id);
   const meta = statusMeta(game);
   const joined = activeCount(game);
   const live = isLive(game);
@@ -31,8 +32,9 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
   const alreadyIn = (game.participants || []).some(
     (p) => p.user === currentUserId && p.status === "joined"
   );
+  const started = hasStarted(game);
   const joinable =
-    !isHost && !alreadyIn && game.status !== "locked" &&
+    !isHost && !alreadyIn && !started && game.status !== "locked" &&
     game.status !== "completed" && game.status !== "cancelled";
 
   return (
@@ -79,7 +81,7 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
               </IconButton>
             </>
           ) : (
-            <IconButton title="Save" onClick={(e) => { e.stopPropagation(); setLiked((v) => !v); }}>
+            <IconButton title="Save" onClick={(e) => { e.stopPropagation(); toggleSaved(game._id); }}>
               <FiHeart size={16} color={liked ? "#E4572E" : "#666"} fill={liked ? "#E4572E" : "none"} />
             </IconButton>
           )}
@@ -110,10 +112,15 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
           </span>
           <span className="pl-meta-item pl-meta-count">
             <FiUsers size={15} /> {joined} / {game.max_players}
+            {game.min_players > 0 && (
+              <span className="pl-min-label">min {game.min_players}</span>
+            )}
           </span>
         </div>
 
-        {/* Join-progress bar */}
+        {/* Join-progress bar — the tick marks where min_players falls, so
+            hosts/joiners can see how close the game is to actually confirming,
+            not just to filling up. */}
         <div className="pl-bar-track">
           <div
             className="pl-bar-fill"
@@ -122,6 +129,15 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
               background: barColor,
             }}
           />
+          {game.max_players > 0 && game.min_players > 0 && (
+            <div
+              className="pl-bar-min-marker"
+              title={`Needs ${game.min_players} to confirm`}
+              style={{
+                left: `${Math.min(100, (game.min_players / game.max_players) * 100)}%`,
+              }}
+            />
+          )}
         </div>
 
         {!isHost && alreadyIn && (
@@ -141,9 +157,11 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
           >
             {game.status === "locked"
               ? "Full"
-              : joiningId === game._id
-                ? "Joining…"
-                : "Join game"}
+              : started
+                ? "In progress"
+                : joiningId === game._id
+                  ? "Joining…"
+                  : "Join game"}
           </button>
         )}
       </div>

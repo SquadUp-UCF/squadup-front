@@ -212,8 +212,10 @@ function AuthPage() {
     }
 
     // SUBMITS PROFILE AFTER VERIFICATION: this is where the user sets their real
-    // username (PATCH /users/me). Note: the backend has no pfp/photo field yet,
-    // so the picture is collected but not uploaded.
+    // username (PATCH /users/me). If a profile picture was chosen (already
+    // cropped/resized by AvatarCropModal), it's uploaded right after via
+    // PUT /users/me/avatar — same "save parent, then attach file" pattern
+    // PostGameModal used for banners.
     async function handleProfileSubmit(e) {
         e.preventDefault();
         setMessage("");
@@ -235,11 +237,27 @@ function AuthPage() {
                 },
                 body: JSON.stringify(body),
             });
-            const data = await res.json();
+            let data = await res.json();
 
             if (!res.ok) {
                 setMessage(errorMessage(data, "Something went wrong"));
                 return;
+            }
+
+            if (pfpFile) {
+                const avatarBody = new FormData();
+                avatarBody.append("avatar", pfpFile);
+                const avatarRes = await fetch(`${API}/users/me/avatar`, {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                    body: avatarBody,
+                });
+                const avatarData = await avatarRes.json().catch(() => null);
+                if (avatarRes.ok && avatarData) {
+                    data = avatarData;
+                }
+                // A failed avatar upload doesn't block finishing setup — the
+                // profile itself already saved; the picture can be added later.
             }
 
             navigate("/posts", { state: { user: data || pendingUser } });

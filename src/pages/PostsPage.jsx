@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FiBell, FiPlus } from "react-icons/fi";
 import MapComponent from "../components/PostPage/MapComponent";
 import PostsList from "../components/PostPage/PostsList";
 import PostGameModal from "../components/PostPage/PostGameModal";
@@ -7,16 +8,30 @@ import ConfirmModal from "../components/PostPage/ConfirmModal";
 import ProfileModal from "../components/PostPage/ProfileModal";
 import GameDetailModal from "../components/PostPage/GameDetailModal";
 import JoinPartySizeModal from "../components/PostPage/JoinPartySizeModal";
+import RatingModal from "../components/PostPage/RatingModal";
+import NotificationsPanel from "../components/PostPage/NotificationsPanel";
 import Logo from "../components/Logo";
+import { useSavedGames } from "../contexts/SavedGamesContext";
 import {
   isActive,
   milesBetween,
   resolvePhotoUrl,
   DEFAULT_VIEW_RADIUS_MILES,
   matchesSkillFilter,
+  activeCount,
 } from "../utils/games";
+import { getNotifications, markAllNotificationsRead, clearAllNotifications } from "../utils/notifications";
 import PostsFilterBar from "../components/PostPage/PostsFilterBar";
 import "./PostsPage.css";
+
+// How often to re-poll for new notifications while the tab is open — mirrors
+// squadup-app's NotificationsProvider polling interval.
+const NOTIF_POLL_MS = 30_000;
+
+// How often to silently re-fetch games/pending-ratings so other people's
+// changes (someone joining, a game filling up or completing) show up on
+// their own, without the user needing to reload the page.
+const GAMES_POLL_MS = 15_000;
 
 const DEFAULT_RADIUS = DEFAULT_VIEW_RADIUS_MILES;
 
@@ -43,6 +58,7 @@ function PostsPage() {
   const location = useLocation();
   const user = location.state?.user;
   const navigate = useNavigate();
+  const { isSaved } = useSavedGames();
 
   const isNarrow = useIsNarrow();
   const [mobileView, setMobileView] = useState("posts"); // "posts" | "map"
@@ -96,6 +112,9 @@ function PostsPage() {
   const [editingGame, setEditingGame] = useState(null); // game being edited, or null
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notifLoading, setNotifLoading] = useState(true);
   // Local copy of the router-state user so the header (name + avatar initials/
   // photo) reflects edits made in ProfileModal without a full reload.
   const [profile, setProfile] = useState(user);
@@ -113,12 +132,15 @@ function PostsPage() {
   const [userPosition, setUserPosition] = useState(null); // [lat, lng] or null
   const [radiusMiles, setRadiusMiles] = useState(DEFAULT_RADIUS);
 
-  // Posts filter bar — all client-side over the fetched `games`. "Range" here
-  // is distance from the viewer's own device, distinct from the map's
-  // UCF-anchored "range" slider (radiusMiles above).
+  // Posts filter bar — all client-side over the fetched `games`.
   const [sportFilter, setSportFilter] = useState("all");
   const [skillFilter, setSkillFilter] = useState("all");
-  const [rangeFilter, setRangeFilter] = useState(null); // miles, or null for "any"
+
+  // Sort — "distance"/"recent"/"players", applied on top of the filters
+  // above. Distinct from the sport/skill/range filters: this only reorders
+  // visibleGames, never hides anything.
+  const [sortBy, setSortBy] = useState("recent");
+  const [sortDir, setSortDir] = useState("desc");
 
   // Find the user once so we can filter posts to those within the chosen range.
   useEffect(() => {
@@ -143,8 +165,10 @@ function PostsPage() {
       .catch(() => {});
   }, []);
 
-  const loadGames = useCallback(() => {
-    setLoading(true);
+  // `silent` skips the loading flag for background polls — otherwise every
+  // periodic refresh would flash "Loading games…" and blank the feed.
+  const loadGames = useCallback(({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     setError("");
     // Fetch upcoming AND in-progress games (upcoming=false lifts the future-only
     // filter), then keep just the ones still relevant — upcoming or live now.
@@ -163,16 +187,107 @@ function PostsPage() {
       })
       .then((data) => setGames(Array.isArray(data) ? data.filter((g) => isActive(g)) : []))
       .catch((err) => {
-        if (err !== "unauthorized") {
+        if (err !== "unauthorized" && !silent) {
           setError("Could not load games. Please try again.");
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   }, [navigate]);
 
   useEffect(() => {
     loadGames();
+    // Auto-refresh so other people's changes (new games, someone joining,
+    // a game filling up/completing) show up without a manual page reload.
+    const interval = setInterval(() => loadGames({ silent: true }), GAMES_POLL_MS);
+    return () => clearInterval(interval);
   }, [loadGames]);
+
+  // Completed games the caller played in but hasn't rated yet. Shown one at a
+  // time via RatingModal; re-fetched after loadGames and whenever a game is
+  // marked completed (handleGameUpdated), since that's what makes a game
+  // newly eligible.
+  const [pendingRatings, setPendingRatings] = useState([]);
+  const [ratingBusy, setRatingBusy] = useState(false);
+
+  const loadPendingRatings = useCallback(() => {
+    fetch(`${API}/games/pending-ratings`, { headers: { Authorization: `Bearer ${token()}` } })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setPendingRatings(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadPendingRatings();
+    const interval = setInterval(loadPendingRatings, GAMES_POLL_MS);
+    return () => clearInterval(interval);
+  }, [loadPendingRatings]);
+
+  async function handleRateSubmit(ratings) {
+    const target = pendingRatings[0];
+    if (!target) return;
+    setRatingBusy(true);
+    try {
+      await fetch(`${API}/games/${target._id}/ratings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token()}`,
+        },
+        body: JSON.stringify({ ratings }),
+      });
+    } catch {
+      // swallow — worst case this game is offered again next load
+    } finally {
+      setRatingBusy(false);
+      setPendingRatings((prev) => prev.slice(1));
+    }
+  }
+
+  // "Later" — dismiss for this session only; the game re-appears in
+  // pending-ratings on the next load until it's actually rated.
+  function handleRateLater() {
+    setPendingRatings((prev) => prev.slice(1));
+  }
+
+  // Notifications — polled in the background (like squadup-app) so the
+  // bell's unread badge updates even while the dropdown is closed.
+  const unreadNotifCount = notifications.filter((n) => !n.read).length;
+
+  const loadNotifications = useCallback(() => {
+    getNotifications().then((data) => {
+      setNotifications(data);
+      setNotifLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, NOTIF_POLL_MS);
+    return () => clearInterval(interval);
+  }, [loadNotifications]);
+
+  function toggleNotifPanel() {
+    setShowNotifPanel((wasOpen) => {
+      const willOpen = !wasOpen;
+      if (willOpen) {
+        setShowAccountMenu(false);
+        loadNotifications();
+      } else if (notifications.some((n) => !n.read)) {
+        // Mirrors squadup-app: closing the panel marks everything read,
+        // rather than requiring a per-item "mark read" action.
+        markAllNotificationsRead();
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      }
+      return willOpen;
+    });
+  }
+
+  function handleClearNotifications() {
+    clearAllNotifications();
+    setNotifications([]);
+  }
 
   function logout() {
     localStorage.removeItem("token");
@@ -189,6 +304,14 @@ function PostsPage() {
         : [savedGame, ...prev];
     });
     loadGames();
+  }
+
+  // Reconciles an in-place game update (guest add/remove, position change,
+  // marking completed) coming back from GameDetailModal — no refetch needed
+  // since the API already returns the full updated document.
+  function handleGameUpdated(updatedGame) {
+    setGames((prev) => prev.map((g) => (g._id === updatedGame._id ? updatedGame : g)));
+    if (updatedGame.status === "completed") loadPendingRatings();
   }
 
   async function handleDeleteConfirmed() {
@@ -270,23 +393,41 @@ function PostsPage() {
 
   // The map's own "range" slider is purely a zoom control now — it no longer
   // hides games (see MapComponent). All active games are shown; only the
-  // filter bar's sport/skill/range-from-you picks narrow what's visible.
+  // filter bar's sport/skill picks narrow what's visible.
   const visibleGames = useMemo(() => {
     return games.filter((g) => {
       if (typeof g.latitude !== "number" || typeof g.longitude !== "number") return false;
       if (sportFilter !== "all" && (g.sport || "").toLowerCase() !== sportFilter) return false;
       if (!matchesSkillFilter(g, skillFilter)) return false;
-      if (rangeFilter !== null) {
-        if (!userPosition) return false;
-        if (milesBetween(userPosition, [g.latitude, g.longitude]) > rangeFilter) return false;
-      }
       return true;
     });
-  }, [games, sportFilter, skillFilter, rangeFilter, userPosition]);
+  }, [games, sportFilter, skillFilter]);
+
+  // Sort pass — layered on top of the filtered set above, never hides games.
+  // "Distance" falls back to leaving order unchanged when the viewer's
+  // location isn't known yet (the pill itself is disabled in that case).
+  const sortedVisibleGames = useMemo(() => {
+    const dir = sortDir === "asc" ? 1 : -1;
+    const withKey = visibleGames.map((g) => {
+      let key;
+      if (sortBy === "distance" && userPosition) {
+        key = milesBetween(userPosition, [g.latitude, g.longitude]);
+      } else if (sortBy === "players") {
+        key = activeCount(g);
+      } else if (sortBy === "favorites") {
+        key = isSaved(g._id) ? 1 : 0;
+      } else {
+        key = new Date(g.createdAt || g.start_time).getTime();
+      }
+      return { g, key };
+    });
+    withKey.sort((a, b) => (a.key - b.key) * dir);
+    return withKey.map((x) => x.g);
+  }, [visibleGames, sortBy, sortDir, userPosition, isSaved]);
 
   const postsPanel = (
     <PostsList
-      games={visibleGames}
+      games={sortedVisibleGames}
       loading={loading}
       error={error}
       currentUserId={currentUserId}
@@ -330,6 +471,30 @@ function PostsPage() {
         </div>
 
         <div className="pp-nav-actions">
+          <div className="pp-bell-wrap">
+            <button
+              onClick={toggleNotifPanel}
+              aria-label="Notifications"
+              className="pp-bell-btn"
+            >
+              <FiBell size={20} />
+              {unreadNotifCount > 0 && (
+                <span className="pp-bell-badge">{unreadNotifCount > 9 ? "9+" : unreadNotifCount}</span>
+              )}
+            </button>
+
+            {showNotifPanel && (
+              <>
+                <div className="pp-menu-backdrop" onClick={toggleNotifPanel} />
+                <NotificationsPanel
+                  notifications={notifications}
+                  loading={notifLoading}
+                  onClear={handleClearNotifications}
+                />
+              </>
+            )}
+          </div>
+
           <button
             onClick={() => setShowModal(true)}
             className="pp-post-btn"
@@ -395,13 +560,6 @@ function PostsPage() {
             Tap a game to join, or post your own.
           </p>
         </div>
-
-        <button
-          onClick={() => setShowModal(true)}
-          className="pp-hero-btn"
-        >
-          Post a game
-        </button>
       </div>
 
       {/* Filters — apply to both the feed and the map, since they share visibleGames */}
@@ -411,9 +569,11 @@ function PostsPage() {
           onSportFilterChange={setSportFilter}
           skillFilter={skillFilter}
           onSkillFilterChange={setSkillFilter}
-          rangeFilter={rangeFilter}
-          onRangeFilterChange={setRangeFilter}
           hasUserPosition={Boolean(userPosition)}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortDir={sortDir}
+          onSortDirChange={setSortDir}
         />
       </div>
 
@@ -495,6 +655,7 @@ function PostsPage() {
           onLeave={handleLeave}
           joiningId={joiningId}
           leavingId={leavingId}
+          onUpdated={handleGameUpdated}
         />
       )}
 
@@ -519,6 +680,24 @@ function PostsPage() {
           onClose={() => setConfirmDelete(null)}
         />
       )}
+
+      {pendingRatings[0] && (
+        <RatingModal
+          game={pendingRatings[0]}
+          currentUserId={currentUserId}
+          busy={ratingBusy}
+          onSubmit={handleRateSubmit}
+          onClose={handleRateLater}
+        />
+      )}
+
+      <button
+        onClick={() => setShowModal(true)}
+        aria-label="Post a game"
+        className="pp-fab"
+      >
+        <FiPlus size={26} />
+      </button>
     </div>
   );
 }

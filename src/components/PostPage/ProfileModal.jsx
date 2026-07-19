@@ -17,6 +17,7 @@ import "./PostGameModal.css";
 import "./ConfirmModal.css";
 import "./ProfileModal.css";
 import { SportIcon, availableSports } from "../SportIcons";
+import AvatarCropModal from "../shared/AvatarCropModal";
 import { resolvePhotoUrl } from "../../utils/games";
 
 const API = import.meta.env.VITE_API_URL;
@@ -95,11 +96,13 @@ export default function ProfileModal({ user, onClose, onSaved }) {
   const [profileMessageOk, setProfileMessageOk] = useState(false);
 
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [cropFile, setCropFile] = useState(null); // raw picked file, awaiting the crop editor
 
   const [activeSkillSport, setActiveSkillSport] = useState(null); // sport awaiting a skill pick
 
   const [joinedGames, setJoinedGames] = useState([]);
   const [createdGames, setCreatedGames] = useState([]);
+  const [savedGames, setSavedGames] = useState([]);
   const [gamesLoading, setGamesLoading] = useState(true);
   const [leavingGameId, setLeavingGameId] = useState(null);
 
@@ -130,11 +133,15 @@ export default function ProfileModal({ user, onClose, onSaved }) {
       fetch(`${API}/games/mine?role=hosting`, { headers: authHeaders() }).then((r) =>
         r.ok ? r.json() : []
       ),
+      fetch(`${API}/users/me/saved-games`, { headers: authHeaders() }).then((r) =>
+        r.ok ? r.json() : []
+      ),
     ])
-      .then(([playing, hosting]) => {
+      .then(([playing, hosting, saved]) => {
         if (cancelled) return;
         setJoinedGames(Array.isArray(playing) ? playing : []);
         setCreatedGames(Array.isArray(hosting) ? hosting : []);
+        setSavedGames(Array.isArray(saved) ? saved : []);
       })
       .finally(() => {
         if (!cancelled) setGamesLoading(false);
@@ -145,11 +152,13 @@ export default function ProfileModal({ user, onClose, onSaved }) {
     };
   }, []);
 
-  async function handleAvatarChange(e) {
+  function handleAvatarPick(e) {
     const file = e.target.files?.[0];
     e.target.value = ""; // allow picking the same file again later
-    if (!file) return;
+    if (file) setCropFile(file);
+  }
 
+  async function uploadAvatar(file) {
     setAvatarUploading(true);
     setProfileMessage("");
     setProfileMessageOk(false);
@@ -328,7 +337,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
                         type="file"
                         accept="image/*"
                         className="pfm-file"
-                        onChange={handleAvatarChange}
+                        onChange={handleAvatarPick}
                         disabled={avatarUploading}
                       />
                     </label>
@@ -345,7 +354,7 @@ export default function ProfileModal({ user, onClose, onSaved }) {
                         type="file"
                         accept="image/*"
                         className="pfm-file"
-                        onChange={handleAvatarChange}
+                        onChange={handleAvatarPick}
                         disabled={avatarUploading}
                       />
                     </label>
@@ -460,6 +469,11 @@ export default function ProfileModal({ user, onClose, onSaved }) {
                   <label className="pgm-label">Games created</label>
                   <GameStrip games={createdGames} loading={gamesLoading} emptyLabel="No games created yet." />
                 </div>
+
+                <div>
+                  <label className="pgm-label">Games saved</label>
+                  <GameStrip games={savedGames} loading={gamesLoading} emptyLabel="No games saved yet." />
+                </div>
               </div>
             )}
           </>
@@ -491,6 +505,17 @@ export default function ProfileModal({ user, onClose, onSaved }) {
           </div>
         )}
       </div>
+
+      {cropFile && (
+        <AvatarCropModal
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onConfirm={(croppedFile) => {
+            setCropFile(null);
+            uploadAvatar(croppedFile);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   formatWhen,
   activeCount,
   isLive,
+  hasStarted,
   resolvePhotoUrl,
   hasCustomBanner,
   UCF_CENTER,
@@ -66,8 +67,9 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId, onLeave, leavin
   const alreadyIn = (game.participants || []).some(
     (p) => p.user === currentUserId && p.status === 'joined'
   );
+  const started = hasStarted(game);
   const joinable =
-    !isHost && !alreadyIn && game.status !== 'locked' &&
+    !isHost && !alreadyIn && !started && game.status !== 'locked' &&
     game.status !== 'completed' && game.status !== 'cancelled';
   const joining = joiningId === game._id;
   const leaving = leavingId === game._id;
@@ -168,9 +170,11 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId, onLeave, leavin
           >
             {game.status === 'locked'
               ? 'Full'
-              : joining
-                ? 'Joining…'
-                : <>Join <span className="map-popup-arrow">→</span></>}
+              : started
+                ? 'In progress'
+                : joining
+                  ? 'Joining…'
+                  : <>Join <span className="map-popup-arrow">→</span></>}
           </button>
         )}
       </div>

@@ -104,11 +104,19 @@
   color: #1A1A1A;
 }
 
+.pl-min-label {
+  margin-left: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #888;
+}
+
 .pl-bar-track {
+  position: relative;
   height: 8px;
   border-radius: 6px;
   background: #EDEDED;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Fill width and color are data-driven and stay inline */
@@ -116,6 +124,20 @@
   height: 100%;
   border-radius: 6px;
   transition: width 0.3s ease;
+  overflow: hidden;
+}
+
+/* Tick mark at the min_players threshold — left offset is data-driven and
+   stays inline. */
+.pl-bar-min-marker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  border-radius: 2px;
+  background: #1a1a1a;
+  opacity: 0.55;
+  transform: translateX(-50%);
 }
 
 .pl-join {
