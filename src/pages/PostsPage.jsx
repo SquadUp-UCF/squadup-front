@@ -7,7 +7,7 @@ import PostGameModal from "../components/PostPage/PostGameModal";
 import ConfirmModal from "../components/PostPage/ConfirmModal";
 import ProfileModal from "../components/PostPage/ProfileModal";
 import GameDetailModal from "../components/PostPage/GameDetailModal";
-import JoinPartySizeModal from "../components/PostPage/JoinPartySizeModal";
+import JoinGuestsModal from "../components/PostPage/JoinGuestsModal";
 import RatingModal from "../components/PostPage/RatingModal";
 import NotificationsPanel from "../components/PostPage/NotificationsPanel";
 import Logo from "../components/Logo";
@@ -334,14 +334,15 @@ function PostsPage() {
     }
   }
 
-  // Opens the party-size picker rather than joining immediately — the actual
-  // request fires from there, once the caller confirms a headcount.
+  // Opens the guest picker rather than joining immediately — the actual
+  // request fires from there, once the caller confirms who (if anyone)
+  // they're bringing.
   function requestJoin(game) {
     setJoinError("");
     setJoinTargetId(game._id);
   }
 
-  async function handleJoin(game, partySize = 1) {
+  async function handleJoin(game, guests = []) {
     setJoiningId(game._id);
     try {
       const res = await fetch(`${API}/games/${game._id}/join`, {
@@ -350,7 +351,7 @@ function PostsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token()}`,
         },
-        body: JSON.stringify({ party_size: partySize }),
+        body: JSON.stringify({ guests }),
       });
       const data = await res.json().catch(() => null);
       if (res.ok && data) {
@@ -660,10 +661,10 @@ function PostsPage() {
       )}
 
       {joinTarget && (
-        <JoinPartySizeModal
+        <JoinGuestsModal
           game={joinTarget}
           onClose={() => setJoinTargetId(null)}
-          onConfirm={(partySize) => handleJoin(joinTarget, partySize)}
+          onConfirm={(guests) => handleJoin(joinTarget, guests)}
           busy={joiningId === joinTarget._id}
           error={joinError}
         />

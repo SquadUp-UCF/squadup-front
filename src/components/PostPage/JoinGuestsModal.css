@@ -1,0 +1,86 @@
+.jgm-guest-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jgm-guest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f4faf5;
+  border-radius: 10px;
+}
+
+.jgm-guest-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.jgm-guest-position {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f6b3e;
+  background: #e4f3e8;
+  border-radius: 8px;
+  padding: 2px 6px;
+}
+
+.jgm-guest-remove {
+  flex-shrink: 0;
+  border: none;
+  background: #fde6e6;
+  color: #c81e1e;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.jgm-add-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.jgm-add-input {
+  flex: 1 1 120px;
+}
+
+.jgm-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d6e4d6;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f6b3e;
+  cursor: pointer;
+}
+
+.jgm-capacity-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+}
+
+.jps-error {
+  margin: -12px 0 16px;
+  color: #a81b1b;
+  font-size: 13px;
+  text-align: center;
+}
