@@ -25,17 +25,18 @@ const FEED_GAMES = [
 ];
 
 const ABOUT_POINTS = [
-    { Icon: MdLocationOn, title: "Find games nearby", body: "Browse pickup games happening around campus and the city, filtered by sport, time, and distance." },
-    { Icon: MdAddCircle, title: "Post your own", body: "Short a few players? Post a game in seconds and let Squad-Up fill your roster." },
-    { Icon: MdGroups, title: "Meet your squad", body: "Play with old friends or meet new ones — Squad-Up is built around showing up together." },
+    { Icon: MdLocationOn, title: "Find Your Game", body: "Browse games happening around campus and the city, filtered by sport, time, and your specific skill level." },
+    { Icon: MdAddCircle, title: "Post Your Own", body: "Short a few players? Post a game in seconds, set the vibe (Beginner to Advanced), and let Squad-Up fill your roster." },
+    { Icon: MdGroups, title: "Meet Your Squad", body: "Play with old friends or meet new ones. Squad-Up is built around the power of showing up together." },
 ];
 
 const TEAM = [
-    { initials: "GB", name: "Grant Bonzo", role: "Mobile frontend" },
-    { initials: "ML", name: "Maxwell Lokshin", role: "Database, backend, project manager" },
-    { initials: "AZ", name: "Aleksandar Zivkovic", role: "Frontend" },
-    { initials: "TB", name: "Tiago Bressar Sabbioni de Lima", role: "Backend/API" },
-    { initials: "WG", name: "Will Goodale", role: "Frontend web" },
+    { initials: "GB", name: "Grant Bonzo", role: "Mobile Frontend Developer" },
+    { initials: "ML", name: "Maxwell Lokshin", role: "Project Manager & Backend Lead" },
+    { initials: "AZ", name: "Aleksandar Zivkovic", role: "Frontend Developer" },
+    { initials: "TS", name: "Tarek Seiba", role: "Backend & API Developer" },
+    { initials: "TS", name: "Tiago Sabbioni", role: "Backend & API Developer" },
+    { initials: "WG", name: "Will Goodale", role: "Web Frontend Developer" },
 ];
 
 function GameCard({ game }) {
@@ -87,12 +88,6 @@ function LandingPage() {
                 lets the user scroll manually, it only runs on its own. */}
             <section className="lp-hero">
                 <div className="lp-feed-panel">
-                    <div className="lp-feed-head">
-                        <span className="lp-feed-pill">
-                            <span className="lp-live-dot" /> 6 games nearby
-                        </span>
-                    </div>
-
                     <div className="lp-feed-scroll">
                         <div className="lp-marquee-track">
                             {[...FEED_GAMES, ...FEED_GAMES].map((game, i) => (
@@ -103,27 +98,24 @@ function LandingPage() {
                 </div>
 
                 <div className="lp-cta-panel">
-                    <span className="lp-live-chip">
-                        <span className="lp-live-chip-dot" /> 36 GAMES LIVE WITHIN 5 MILES
-                    </span>
                     <h1 className="lp-cta-title">
-                        Find your next<br />
-                        game. <span className="lp-cta-title-accent">Right now.</span>
+                        Find your game.<br />
+                        <span className="lp-cta-title-accent">Meet your people.</span>
                     </h1>
                     <p className="lp-cta-sub">
-                        Connect with local players and discover pickup games happening near you.
+                        Choose your vibe, claim your spot, and play on campus today.
                     </p>
 
                     <div className="lp-stats-row">
                         <div className="lp-stat">
                             <MdGroups className="lp-stat-icon" size={22} />
                             <span className="lp-stat-num">12.5K</span>
-                            <span className="lp-stat-label">Players</span>
+                            <span className="lp-stat-label">Students Connected</span>
                         </div>
                         <div className="lp-stat">
                             <MdCalendarToday className="lp-stat-icon" size={20} />
-                            <span className="lp-stat-num">380</span>
-                            <span className="lp-stat-label">Games / Week</span>
+                            <span className="lp-stat-num">380+</span>
+                            <span className="lp-stat-label">Weekly Events</span>
                         </div>
                         <div className="lp-stat">
                             <MdEmojiEvents className="lp-stat-icon" size={22} />
@@ -133,7 +125,7 @@ function LandingPage() {
                     </div>
 
                     <button className="lp-cta-button" onClick={() => navigate("/auth")}>
-                        Sign In to Find Matches <FiArrowRight size={17} />
+                        Find Your Game <FiArrowRight size={17} />
                     </button>
                     <p className="lp-cta-signup">
                         Don't have an account? <button onClick={() => navigate("/auth")}>Sign up free</button>
@@ -150,9 +142,20 @@ function LandingPage() {
                 <div className="lp-about-inner">
                     <h2 className="lp-section-title">About Us</h2>
                     <p className="lp-about-sub">
-                        We built Squad-Up because organizing a pickup game shouldn't take a group chat
-                        with twenty unanswered texts. Post it, fill it, play it.
+                        We built Squad-Up because organizing a game shouldn't require a group chat
+                        with twenty unanswered texts. We wanted a simpler way to get off our screens,
+                        get outside, and just play.
                     </p>
+
+                    <h3 className="lp-about-subheading">What We Do</h3>
+                    <p className="lp-about-sub">
+                        Squad-Up is the ultimate campus hub for student-led sports and socials. Whether
+                        you're looking for a high-energy matchup or a casual run on the quad, we match
+                        you with students at your skill level so you can find your crew and just show up.
+                    </p>
+                    <p className="lp-about-tagline">Post it. Fill it. Play it.</p>
+
+                    <h3 className="lp-about-subheading">How It Works</h3>
                     <div className="lp-about-grid">
                         {ABOUT_POINTS.map(({ Icon, title, body }) => (
                             <div className="lp-about-card" key={title}>
