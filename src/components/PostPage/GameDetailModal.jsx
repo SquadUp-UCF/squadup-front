@@ -7,9 +7,10 @@
  * player's skill level for this sport (from the `skill_levels` map, falling
  * back to the legacy `preferred_positions`), a notifications toggle, and the
  * join/leave action. Registered players open their public profile
- * (PlayerProfileModal) on click; the host can add/remove guest players and
- * mark the game completed (which is what makes it eligible for post-game
- * ratings), and any joined player can set their own position.
+ * (PlayerProfileModal) on click. Any joined player — not just the host — can
+ * add a guest and set their own position; a guest can be removed by the host
+ * or by whichever player brought them. Only the host can mark the game
+ * completed (which is what makes it eligible for post-game ratings).
  */
 import { useEffect, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -389,7 +390,10 @@ export default function GameDetailModal({
                     key={`guest-${p._index}`}
                     name={p.name}
                     position={p.position}
-                    canRemove={isHost && !isTerminal}
+                    // The host manages the whole roster; anyone else may only
+                    // take back a guest they personally brought (mirrors the
+                    // backend's removeGuest rule).
+                    canRemove={(isHost || p.added_by === currentUserId) && !isTerminal}
                     removing={removingGuestIndex === p._index}
                     onRemove={() => handleRemoveGuest(p._index)}
                   />
@@ -397,7 +401,7 @@ export default function GameDetailModal({
               )}
             </div>
 
-            {isHost && !isTerminal && (
+            {(isHost || alreadyIn) && !isTerminal && (
               <form onSubmit={handleAddGuest} className="gdm-guest-form">
                 <input
                   className="pgm-input gdm-guest-input"
