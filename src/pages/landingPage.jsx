@@ -32,10 +32,10 @@ const ABOUT_POINTS = [
 
 const TEAM = [
     { initials: "GB", name: "Grant Bonzo", role: "Mobile Frontend Developer" },
-    { initials: "ML", name: "Maxwell Lokshin", role: "Project Manager & Backend Lead" },
+    { initials: "ML", name: "Maxwell Lokshin", role: "Project Manager, Database, & Web Frontend Developer" },
     { initials: "AZ", name: "Aleksandar Zivkovic", role: "Frontend Developer" },
-    { initials: "TS", name: "Tarek Seiba", role: "Backend & API Developer" },
-    { initials: "TS", name: "Tiago Sabbioni", role: "Backend & API Developer" },
+    { initials: "TS", name: "Tarek Seiba", role: "Backend/API Developer" },
+    { initials: "TS", name: "Tiago Sabbioni", role: "Backend/API & Mobile Developer" },
     { initials: "WG", name: "Will Goodale", role: "Web Frontend Developer" },
 ];
 
