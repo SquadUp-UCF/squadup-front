@@ -1,4 +1,4 @@
-.bcm-overlay {
+.acm-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
@@ -9,11 +9,11 @@
   z-index: 2100;
 }
 
-.bcm-modal {
+.acm-modal {
   background: #ffffff;
   border-radius: 20px;
   padding: 24px;
-  max-width: 460px;
+  max-width: 380px;
   width: 100%;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -21,25 +21,25 @@
   align-items: center;
 }
 
-.bcm-title {
+.acm-title {
   margin: 0 0 4px;
   font-size: 18px;
-  color: #1a1a1a;
+  color: var(--su-text, #1a1a1a);
   align-self: flex-start;
 }
 
-.bcm-hint {
+.acm-hint {
   margin: 0 0 16px;
   font-size: 13px;
-  color: #666;
+  color: var(--su-muted, #666);
   align-self: flex-start;
 }
 
-.bcm-stage {
+.acm-stage {
   position: relative;
   width: 100%;
-  max-width: 420px;
-  aspect-ratio: 7 / 5;
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border-radius: 12px;
   background: #1a1a1a;
@@ -47,11 +47,11 @@
   cursor: grab;
 }
 
-.bcm-stage:active {
+.acm-stage:active {
   cursor: grabbing;
 }
 
-.bcm-image {
+.acm-image {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -59,27 +59,28 @@
   pointer-events: none;
 }
 
-/* The "spotlight" trick: an oversized box-shadow on the crop window fills the
-   rest of the (clipped, position:relative) stage with a dark tint, leaving
-   only this rect clear — a live preview of exactly what will be kept. */
-.bcm-crop-window {
+/* The "spotlight" trick: an oversized box-shadow on the circular crop window
+   fills the rest of the (clipped, position:relative) stage with a dark tint,
+   leaving only this circle clear — a live preview of exactly what will be
+   kept, matching how avatars actually render (circular) everywhere else. */
+.acm-crop-window {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: 6px;
+  border-radius: 50%;
   box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.55);
   pointer-events: none;
 }
 
-.bcm-zoom {
+.acm-zoom {
   width: 100%;
   margin-top: 16px;
-  accent-color: #2f8f4e;
+  accent-color: var(--su-green, #2f8f4e);
 }
 
-.bcm-actions {
+.acm-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -87,7 +88,7 @@
   width: 100%;
 }
 
-.bcm-btn {
+.acm-btn {
   border: none;
   border-radius: 10px;
   padding: 10px 20px;
@@ -96,36 +97,36 @@
   cursor: pointer;
 }
 
-.bcm-btn-cancel {
+.acm-btn-cancel {
   background: #f1f1f1;
   color: #333;
 }
 
-.bcm-btn-confirm {
-  background: #2f8f4e;
+.acm-btn-confirm {
+  background: var(--su-green, #2f8f4e);
   color: #ffffff;
 }
 
-.bcm-btn-confirm:disabled {
+.acm-btn-confirm:disabled {
   background: #a8d3b6;
   cursor: default;
 }
 
 @media (max-width: 480px) {
-  .bcm-overlay {
+  .acm-overlay {
     padding: 10px;
   }
 
-  .bcm-modal {
+  .acm-modal {
     padding: 16px;
     border-radius: 16px;
   }
 
-  .bcm-actions {
+  .acm-actions {
     gap: 8px;
   }
 
-  .bcm-btn {
+  .acm-btn {
     flex: 1;
     padding: 10px 0;
   }

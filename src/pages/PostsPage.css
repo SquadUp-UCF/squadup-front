@@ -52,6 +52,45 @@
   cursor: pointer;
 }
 
+.pp-bell-wrap {
+  position: relative;
+}
+
+.pp-bell-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f1f1;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.pp-bell-btn:hover {
+  background: #e4e4e4;
+}
+
+.pp-bell-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #c81e1e;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  border: 2px solid #ffffff;
+}
+
 .pp-avatar-wrap {
   position: relative;
 }
@@ -159,14 +198,28 @@
   margin: 0;
 }
 
-.pp-hero-btn {
-  background: #FFFFFF;
-  color: #1F6B3E;
+/* Floating "post a game" action button — fixed to the bottom-right corner
+   so it's always reachable regardless of scroll position. */
+.pp-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   border: none;
-  border-radius: 20px;
-  padding: 12px 24px;
-  font-weight: 700;
+  background: #2f8f4e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1500;
+}
+
+.pp-fab:hover {
+  background: #257a41;
 }
 
 /* Posts filter bar */
@@ -306,8 +359,9 @@
     margin: 8px 0 6px;
   }
 
-  .pp-hero-btn {
-    width: 100%;
+  .pp-fab {
+    right: 16px;
+    bottom: 16px;
   }
 
   .pp-filter-wrap {

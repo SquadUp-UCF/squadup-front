@@ -4,6 +4,7 @@ import "./ProfileSetup.css";
 import Logo from "../Logo";
 import HeroPanel from "./HeroPanel";
 import { SportIcon, availableSports } from "../SportIcons";
+import AvatarCropModal from "../shared/AvatarCropModal";
 
 // Turn a registry slug ("table-tennis") into a readable label ("Table Tennis").
 function sportLabel(slug) {
@@ -15,6 +16,7 @@ function sportLabel(slug) {
 
 function ProfileSetup({ username, sport, pfpFile, onUsernameChange, onSportChange, onPfpChange, onSubmit, message }) {
   const [preview, setPreview] = useState(null);
+  const [cropFile, setCropFile] = useState(null); // raw picked file, awaiting the crop editor
 
   // Local object-URL preview for the chosen picture (revoked on change/unmount).
   useEffect(() => {
@@ -149,7 +151,11 @@ function ProfileSetup({ username, sport, pfpFile, onUsernameChange, onSportChang
                   type="file"
                   accept="image/*"
                   className="ps-file"
-                  onChange={(e) => onPfpChange(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const picked = e.target.files?.[0] || null;
+                    e.target.value = ""; // allow picking the same file again later
+                    if (picked) setCropFile(picked);
+                  }}
                 />
               </label>
             </div>
@@ -162,6 +168,17 @@ function ProfileSetup({ username, sport, pfpFile, onUsernameChange, onSportChang
           </form>
         </div>
       </div>
+
+      {cropFile && (
+        <AvatarCropModal
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onConfirm={(croppedFile) => {
+            onPfpChange(croppedFile);
+            setCropFile(null);
+          }}
+        />
+      )}
     </div>
   );
 }

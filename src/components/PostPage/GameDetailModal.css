@@ -137,6 +137,19 @@
   align-items: center;
   gap: 10px;
   padding: 6px 0;
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+}
+
+.gdm-player-row--clickable {
+  cursor: pointer;
+}
+
+.gdm-player-row--clickable:hover .gdm-player-name {
+  color: #1f6b3e;
 }
 
 .gdm-player-avatar {
@@ -183,6 +196,132 @@
 .gdm-player-skill {
   font-size: 12px;
   color: #888;
+}
+
+.gdm-player-chevron {
+  flex-shrink: 0;
+  color: #ccc;
+}
+
+.gdm-player-row--clickable:hover .gdm-player-chevron {
+  color: #1f6b3e;
+}
+
+.gdm-player-position {
+  font-size: 11px;
+  color: #1f6b3e;
+  background: #e4f3e8;
+  border-radius: 8px;
+  padding: 2px 6px;
+}
+
+.gdm-player-guest-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #888;
+  background: #f1f1f1;
+  border-radius: 8px;
+  padding: 2px 6px;
+}
+
+.gdm-guest-remove {
+  border: none;
+  background: #fde6e6;
+  color: #c81e1e;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.gdm-guest-remove:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.gdm-guest-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.gdm-guest-input {
+  flex: 1 1 120px;
+}
+
+.gdm-guest-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d6e4d6;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f6b3e;
+  cursor: pointer;
+}
+
+.gdm-guest-add-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.gdm-position-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gdm-position-edit {
+  display: flex;
+  gap: 8px;
+}
+
+.gdm-position-input {
+  flex: 1;
+}
+
+.gdm-position-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: #2f8f4e;
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gdm-position-save-btn:disabled {
+  background: #a8d3b6;
+  cursor: default;
+}
+
+.gdm-complete-btn {
+  border: 1px solid #d6e4d6;
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f6b3e;
+  cursor: pointer;
+}
+
+.gdm-complete-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .gdm-leave-btn {

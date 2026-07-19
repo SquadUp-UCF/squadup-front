@@ -1,36 +1,29 @@
 /**
- * Pan/zoom/crop editor shown after a host picks a banner image, before it's
- * uploaded. Two problems this solves:
+ * Pan/zoom/crop editor shown after a profile picture is picked, before it's
+ * uploaded. Adapted from the game-banner crop editor (now removed along with
+ * banner uploads) for a square avatar instead of a wide banner:
  *
- * 1. Large photos (multi-MB, high-megapixel phone camera shots) were failing
- *    to upload against the API's 5MB cap. Rather than raise that limit
- *    (backend), this editor always re-renders the chosen crop onto a fixed
- *    ~1200px-wide canvas and exports it as a compressed JPEG — so whatever
- *    the source photo's size, what actually gets uploaded is small and
- *    predictable.
- * 2. Hosts had no way to control which part of a photo becomes the banner;
- *    `background-size: cover` just centered and cropped it sight-unseen. This
- *    lets them drag/zoom to choose, with a live preview of exactly what will
- *    be kept (the clear window) vs. cropped away (the dimmed area).
+ * 1. Whatever the source photo's resolution, the crop is always re-rendered
+ *    onto a small fixed-size canvas and exported as a compressed JPEG — so
+ *    avatar uploads stay tiny and predictable instead of shipping a multi-MB
+ *    phone photo to the server.
+ * 2. The user drags/zooms to choose which part of the photo becomes their
+ *    picture, with a live circular preview of exactly what will be kept.
  *
- * The stage's on-screen size is controlled entirely by CSS (it shrinks to fit
- * narrow phone screens) and measured via ResizeObserver rather than assumed —
- * all the pan/zoom/crop math is done in real rendered pixels, so it stays
- * correct at any viewport width instead of only matching a fixed desktop size.
+ * The stage's on-screen size is controlled by CSS and measured via
+ * ResizeObserver rather than assumed, so the pan/zoom/crop math stays correct
+ * at any viewport width.
  */
 import { useEffect, useRef, useState } from "react";
-import "./BannerCropModal.css";
+import "./AvatarCropModal.css";
 
-const CROP_ASPECT = 2.5;
-// Crop window width as a fraction of the stage's rendered width, leaving a
-// margin on every side so the dimmed "cropped away" context is visible.
+const CROP_ASPECT = 1; // square
 const CROP_FRACTION = 0.9;
-const OUTPUT_WIDTH = 1200;
-const OUTPUT_HEIGHT = Math.round(OUTPUT_WIDTH / CROP_ASPECT);
+const OUTPUT_SIZE = 320; // small, fixed — keeps uploads tiny regardless of source size
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 3;
 
-export default function BannerCropModal({ file, onCancel, onConfirm }) {
+export default function AvatarCropModal({ file, onCancel, onConfirm }) {
   const [imgUrl, setImgUrl] = useState(null);
   const [natural, setNatural] = useState(null); // { w, h }
   const [zoom, setZoom] = useState(1);
@@ -63,14 +56,12 @@ export default function BannerCropModal({ file, onCancel, onConfirm }) {
 
   if (!file) return null;
 
-  const cropW = stageSize.w * CROP_FRACTION;
+  const cropW = Math.min(stageSize.w, stageSize.h) * CROP_FRACTION;
   const cropH = cropW / CROP_ASPECT;
   const ready = Boolean(natural) && cropW > 0;
 
   // At zoom 1 the image exactly covers the crop window (like object-fit:
-  // cover, but only guaranteed for the crop window — the rest of the stage
-  // may show the modal background if the photo doesn't extend that far,
-  // which is fine, it's just dimmed context).
+  // cover, but only guaranteed for the crop window).
   const baseScale = ready ? Math.max(cropW / natural.w, cropH / natural.h) : 1;
   const scale = baseScale * zoom;
   const iw = ready ? natural.w * scale : 0;
@@ -134,14 +125,14 @@ export default function BannerCropModal({ file, onCancel, onConfirm }) {
     sy = Math.min(Math.max(sy, 0), Math.max(0, natural.h - natCropH));
 
     const canvas = document.createElement("canvas");
-    canvas.width = OUTPUT_WIDTH;
-    canvas.height = OUTPUT_HEIGHT;
+    canvas.width = OUTPUT_SIZE;
+    canvas.height = OUTPUT_SIZE;
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(imgRef.current, sx, sy, natCropW, natCropH, 0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+    ctx.drawImage(imgRef.current, sx, sy, natCropW, natCropH, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
     canvas.toBlob(
       (blob) => {
         if (!blob) return;
-        const croppedFile = new File([blob], "banner.jpg", { type: "image/jpeg" });
+        const croppedFile = new File([blob], "avatar.jpg", { type: "image/jpeg" });
         onConfirm(croppedFile);
       },
       "image/jpeg",
@@ -151,22 +142,22 @@ export default function BannerCropModal({ file, onCancel, onConfirm }) {
 
   return (
     <div
-      className="bcm-overlay"
+      className="acm-overlay"
       onClick={(e) => {
-        // Nested inside PostGameModal's own overlay — without this, clicking
-        // the backdrop to cancel the crop would bubble up and close the
-        // whole "post a game" form too.
+        // May be nested inside another modal's own overlay (ProfileModal,
+        // ProfileSetup) — without this, clicking the backdrop to cancel the
+        // crop would bubble up and close the parent form too.
         e.stopPropagation();
         onCancel();
       }}
     >
-      <div className="bcm-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="bcm-title">Adjust banner</h3>
-        <p className="bcm-hint">Drag to reposition, use the slider to zoom.</p>
+      <div className="acm-modal" onClick={(e) => e.stopPropagation()}>
+        <h3 className="acm-title">Adjust photo</h3>
+        <p className="acm-hint">Drag to reposition, use the slider to zoom.</p>
 
         <div
           ref={stageRef}
-          className="bcm-stage"
+          className="acm-stage"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -179,7 +170,7 @@ export default function BannerCropModal({ file, onCancel, onConfirm }) {
               alt=""
               onLoad={handleImgLoad}
               draggable={false}
-              className="bcm-image"
+              className="acm-image"
               style={{
                 width: iw || undefined,
                 height: ih || undefined,
@@ -190,16 +181,16 @@ export default function BannerCropModal({ file, onCancel, onConfirm }) {
           )}
 
           {/* The "keep" window: box-shadow spills a dark tint over everything
-              in the stage outside this rect, so the rest reads as cropped-away
-              context rather than part of the final banner. */}
+              in the stage outside this circle, so the rest reads as
+              cropped-away context rather than part of the final picture. */}
           {cropW > 0 && (
-            <div className="bcm-crop-window" style={{ width: cropW, height: cropH }} />
+            <div className="acm-crop-window" style={{ width: cropW, height: cropH }} />
           )}
         </div>
 
         <input
           type="range"
-          className="bcm-zoom"
+          className="acm-zoom"
           min={ZOOM_MIN}
           max={ZOOM_MAX}
           step={0.01}
@@ -208,13 +199,13 @@ export default function BannerCropModal({ file, onCancel, onConfirm }) {
           disabled={!ready}
         />
 
-        <div className="bcm-actions">
-          <button type="button" className="bcm-btn bcm-btn-cancel" onClick={onCancel}>
+        <div className="acm-actions">
+          <button type="button" className="acm-btn acm-btn-cancel" onClick={onCancel}>
             Cancel
           </button>
           <button
             type="button"
-            className="bcm-btn bcm-btn-confirm"
+            className="acm-btn acm-btn-confirm"
             onClick={handleConfirm}
             disabled={!ready}
           >
