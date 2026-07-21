@@ -91,59 +91,15 @@
     .lp-feed-scroll .lp-marquee-track { animation: none; }
 }
 
-/* ── Feed card (matches the product's own card design) ──────────────── */
-.lp-card {
-    background: #ffffff;
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 14px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+/* ── Feed cards ─────────────────────────────────────────────────────────
+   The cards themselves reuse the product's real game-card styles (the pl-*
+   classes from components/PostPage/PostsList.css) so the preview always
+   matches what players see in-app. These overrides only adjust the marquee
+   spacing and give the cards a stronger lift against the dark feed panel. */
+.lp-marquee-track .pl-card {
+    margin-bottom: 16px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
 }
-.lp-card-photo {
-    position: relative;
-    height: 120px;
-    background-size: cover;
-    background-position: center;
-}
-.lp-card-new {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: var(--su-lime);
-    color: var(--su-green-deep);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    padding: 4px 10px;
-    border-radius: 999px;
-}
-.lp-card-heart {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--su-text);
-}
-.lp-card-body { padding: 12px 14px 14px; }
-.lp-card-sport {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-.lp-card-sport-dot { width: 8px; height: 8px; border-radius: 50%; }
-.lp-card-title { font-family: "Outfit", sans-serif; font-weight: 700; font-size: 15px; color: var(--su-text); margin: 0 0 8px; }
-.lp-card-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.lp-card-meta-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--su-muted); }
-.lp-card-meta-item.lp-card-players { color: var(--su-green); font-weight: 700; }
 
 /* Right: marketing panel */
 .lp-cta-panel {
