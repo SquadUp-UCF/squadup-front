@@ -48,7 +48,7 @@ export default function PlayerProfileModal({ userId, onClose }) {
   }, [userId]);
 
   const initial = (profile?.first_name || profile?.username || "?").charAt(0).toUpperCase();
-  const skills = profile ? Object.entries(profile.skill_levels || profile.preferred_positions || {}) : [];
+  const skills = profile ? Object.entries(profile.skill_levels || {}) : [];
 
   return (
     <div onClick={onClose} className="pfm-overlay">

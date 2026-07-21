@@ -4,8 +4,7 @@
  * Shows everything the card doesn't have room for: the full description, a
  * small map centered on the pin, the roster (fetched per-participant via
  * GET /users/:id since the game document only stores participant ids), each
- * player's skill level for this sport (from the `skill_levels` map, falling
- * back to the legacy `preferred_positions`), a notifications toggle, and the
+ * player's skill level for this sport (from the `skill_levels` map), and the
  * join/leave action. Registered players open their public profile
  * (PlayerProfileModal) on click. Any joined player — not just the host — can
  * add a guest and set their own position; a guest can be removed by the host
@@ -17,7 +16,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { FiMapPin, FiClock, FiUsers, FiBell, FiBellOff, FiX, FiUserPlus, FiCheck, FiChevronRight } from "react-icons/fi";
+import { FiMapPin, FiClock, FiUsers, FiX, FiUserPlus, FiCheck, FiChevronRight } from "react-icons/fi";
 import "./PostGameModal.css";
 import "./MapComponent.css";
 import "./GameDetailModal.css";
@@ -27,8 +26,6 @@ import { positionsForSport } from "../../utils/positions";
 import { statusMeta, formatWhen, activeCount, isLive, hasStarted, resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
 
 const API = import.meta.env.VITE_API_URL;
-const DEVICE_TOKEN_KEY = "squadup_web_device_token";
-const NOTIFICATIONS_KEY = "squadup_notifications_enabled";
 
 function sportLabel(sport) {
   return String(sport || "").replace(/-/g, " ");
@@ -46,17 +43,6 @@ const pinIcon = L.divIcon({
   iconAnchor: [17, 34],
 });
 
-// A stable per-browser id so repeat "enable notifications" clicks register
-// the same row (upsert) instead of piling up duplicates.
-function getOrCreateDeviceToken() {
-  let token = localStorage.getItem(DEVICE_TOKEN_KEY);
-  if (!token) {
-    token = crypto.randomUUID();
-    localStorage.setItem(DEVICE_TOKEN_KEY, token);
-  }
-  return token;
-}
-
 function PlayerRow({ userId, isHost, sport, position, onOpenProfile }) {
   const [profile, setProfile] = useState(null);
 
@@ -73,7 +59,7 @@ function PlayerRow({ userId, isHost, sport, position, onOpenProfile }) {
     };
   }, [userId]);
 
-  const skill = profile?.skill_levels?.[sport] ?? profile?.preferred_positions?.[sport];
+  const skill = profile?.skill_levels?.[sport];
 
   return (
     <button
@@ -135,10 +121,6 @@ export default function GameDetailModal({
   leavingId,
   onUpdated = () => {},
 }) {
-  const [notifsEnabled, setNotifsEnabled] = useState(
-    () => localStorage.getItem(NOTIFICATIONS_KEY) === "true"
-  );
-  const [notifMessage, setNotifMessage] = useState("");
   const [viewProfileUserId, setViewProfileUserId] = useState(null);
 
   const [guestName, setGuestName] = useState("");
@@ -171,43 +153,6 @@ export default function GameDetailModal({
   const [myPosition, setMyPosition] = useState(myEntry?.position || "");
   const hasCoords = typeof game.latitude === "number" && typeof game.longitude === "number";
   const sportPositions = positionsForSport(game.sport);
-
-  async function handleToggleNotifications() {
-    setNotifMessage("");
-
-    if (notifsEnabled) {
-      setNotifsEnabled(false);
-      localStorage.setItem(NOTIFICATIONS_KEY, "false");
-      return;
-    }
-
-    if (!("Notification" in window)) {
-      setNotifMessage("This browser doesn't support notifications.");
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      setNotifMessage("Notifications were blocked — enable them in your browser settings.");
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API}/notifications/device-token`, {
-        method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ token: getOrCreateDeviceToken(), platform: "web" }),
-      });
-      if (!res.ok) {
-        setNotifMessage("Could not register this device for notifications.");
-        return;
-      }
-      setNotifsEnabled(true);
-      localStorage.setItem(NOTIFICATIONS_KEY, "true");
-    } catch {
-      setNotifMessage("Network error: is the API reachable?");
-    }
-  }
 
   async function handleAddGuest(e) {
     e.preventDefault();
@@ -365,12 +310,6 @@ export default function GameDetailModal({
               <FiUsers size={15} /> {joined} / {game.max_players} players
             </span>
           </div>
-
-          <button type="button" onClick={handleToggleNotifications} className="gdm-notif-btn">
-            {notifsEnabled ? <FiBell size={16} /> : <FiBellOff size={16} />}
-            {notifsEnabled ? "Notifications on" : "Enable notifications"}
-          </button>
-          {notifMessage && <p className="pgm-error">{notifMessage}</p>}
 
           <div className="gdm-roster">
             <span className="pgm-label">Players ({roster.length})</span>
