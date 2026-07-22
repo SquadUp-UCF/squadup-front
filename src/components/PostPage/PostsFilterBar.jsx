@@ -10,7 +10,7 @@
  */
 import { useState } from "react";
 import "./PostsFilterBar.css";
-import { FiFilter, FiChevronsDown } from "react-icons/fi";
+import { FiFilter, FiChevronsDown, FiHeart } from "react-icons/fi";
 import { availableSports } from "../SportIcons";
 import { GAME_SKILL_LEVELS, skillLabel } from "../../utils/games";
 
@@ -43,12 +43,13 @@ export default function PostsFilterBar({
   onSortDirChange,
 }) {
   const [showFilters, setShowFilters] = useState(false);
-  const isFiltered = sportFilters.length > 0 || skillFilters.length > 0 || savedOnly;
+  // Saved now lives in the toolbar (like the mobile app), so the menu's
+  // filtered-state and "Clear filters" only cover sport/skill.
+  const isFiltered = sportFilters.length > 0 || skillFilters.length > 0;
 
   function reset() {
     onSportFiltersChange([]);
     onSkillFiltersChange([]);
-    onSavedOnlyChange(false);
   }
 
   return (
@@ -101,15 +102,6 @@ export default function PostsFilterBar({
                   </div>
                 </div>
 
-                <label className="pfb-check">
-                  <input
-                    type="checkbox"
-                    checked={savedOnly}
-                    onChange={(e) => onSavedOnlyChange(e.target.checked)}
-                  />
-                  Saved games only
-                </label>
-
                 {isFiltered && (
                   <button type="button" className="pfb-reset" onClick={reset}>
                     Clear filters
@@ -132,6 +124,17 @@ export default function PostsFilterBar({
             style={{ transform: sortDir === "asc" ? "rotate(180deg)" : undefined }}
           />
           Sort
+        </button>
+
+        <button
+          type="button"
+          className={`pfb-toolbar-btn ${savedOnly ? "pfb-toolbar-btn--active" : ""}`}
+          onClick={() => onSavedOnlyChange(!savedOnly)}
+          aria-pressed={savedOnly}
+          title="Show saved games only"
+        >
+          <FiHeart size={16} />
+          Saved
         </button>
       </div>
 
