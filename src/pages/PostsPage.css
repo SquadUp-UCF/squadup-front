@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
+  padding: 22px 32px;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -42,24 +42,14 @@
   gap: 16px;
 }
 
-.pp-post-btn {
-  background: #2F8F4E;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 20px;
-  padding: 10px 20px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .pp-bell-wrap {
   position: relative;
 }
 
 .pp-bell-btn {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: none;
   background: #f1f1f1;
@@ -96,8 +86,8 @@
 }
 
 .pp-avatar {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: #CDEBCD;
   color: #1F6B3E;
@@ -184,6 +174,9 @@
   width: 8px;
   height: 8px;
   border: none;
+  --dot-color: #ff2d2d;
+  --dot-shadow: rgba(255, 45, 45, 0.6);
+  --dot-shadow-end: rgba(255, 45, 45, 0);
   --dot-spread: 8px;
 }
 
@@ -198,24 +191,28 @@
   margin: 0;
 }
 
-/* Floating "post a game" action button — fixed to the bottom-right corner
-   so it's always reachable regardless of scroll position. */
+/* Floating "Create game" action button — fixed to the bottom-center of the
+   screen (like the mobile app) so it's always reachable regardless of scroll
+   position. */
 .pp-fab {
   position: fixed;
-  right: 24px;
+  left: 50%;
   bottom: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  transform: translateX(-50%);
   border: none;
+  border-radius: 999px;
+  padding: 14px 26px;
   background: #2f8f4e;
   color: #ffffff;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
   z-index: 1500;
+  white-space: nowrap;
 }
 
 .pp-fab:hover {
@@ -343,11 +340,6 @@
     font-size: 18px;
   }
 
-  .pp-post-btn {
-    padding: 8px 14px;
-    font-size: 14px;
-  }
-
   .pp-hero {
     margin: 0 16px 16px;
     padding: 20px;
@@ -360,7 +352,6 @@
   }
 
   .pp-fab {
-    right: 16px;
     bottom: 16px;
   }
 

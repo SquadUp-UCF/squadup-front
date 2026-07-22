@@ -497,13 +497,6 @@ function PostsPage() {
             )}
           </div>
 
-          <button
-            onClick={() => setShowModal(true)}
-            className="pp-post-btn"
-          >
-            + Post a game
-          </button>
-
           <div className="pp-avatar-wrap">
             <div
               title={profile ? profile.name : "Profile"}
@@ -697,10 +690,11 @@ function PostsPage() {
 
       <button
         onClick={() => setShowModal(true)}
-        aria-label="Post a game"
+        aria-label="Create game"
         className="pp-fab"
       >
-        <FiPlus size={26} />
+        <FiPlus size={20} />
+        Create game
       </button>
     </div>
   );
