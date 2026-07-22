@@ -75,6 +75,12 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
   // any joined player including the host sets/changes their own position
   // from the game's detail view instead).
   const [hostPosition, setHostPosition] = useState("");
+  // Guests the host pre-adds while creating the game (name + optional
+  // position). They need no account — the API seeds them as roster entries.
+  // Create-only; editing manages the roster from the game's detail view.
+  const [guests, setGuests] = useState([]);
+  const [guestName, setGuestName] = useState("");
+  const [guestPosition, setGuestPosition] = useState("");
   const [userPosition, setUserPosition] = useState(null); // where the user is now
   const [picked, setPicked] = useState(
     game && typeof game.latitude === "number" ? [game.latitude, game.longitude] : null
@@ -101,6 +107,18 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
       () => {}
     );
   }, []);
+
+  function addGuest() {
+    const name = guestName.trim();
+    if (!name) return;
+    setGuests((prev) => [...prev, { name, position: guestPosition || undefined }]);
+    setGuestName("");
+    setGuestPosition("");
+  }
+
+  function removeGuest(index) {
+    setGuests((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -145,11 +163,14 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
       max_players: Number(maxPlayers),
       skill_level: skillLevel,
     };
-    // Guests are never seeded here — the host adds them manually afterward
-    // from the game's detail view ("Add guest"). Only the host's own
-    // position is collected at creation time.
+    // At creation the host can seed the roster: their own position plus any
+    // guests they pre-add (each becomes an individual roster entry). Editing
+    // manages the roster from the detail view instead, so both are create-only.
     if (!isEdit && hostPosition) {
       body.host_position = hostPosition;
+    }
+    if (!isEdit && guests.length > 0) {
+      body.players = guests;
     }
 
     setSubmitting(true);
@@ -204,6 +225,7 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
               onChange={(e) => {
                 setSportChoice(e.target.value);
                 setHostPosition("");
+                setGuestPosition("");
               }}
             >
               <option value="" disabled>
@@ -262,12 +284,18 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
             </p>
           </div>
 
-          <textarea
-            className="pgm-inline-input pgm-inline-textarea"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add a description…"
-          />
+          <div className="pgm-field">
+            <label className="pgm-label" htmlFor="pgm-description">
+              Description <span className="pgm-label-optional">(optional)</span>
+            </label>
+            <textarea
+              id="pgm-description"
+              className="pgm-input pgm-textarea"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add details — the vibe, what to bring, where exactly to meet…"
+            />
+          </div>
 
           <div className="pgm-section">
             <span className="pgm-label">
@@ -326,11 +354,6 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
                 />
               </div>
             </div>
-            {!isEdit && (
-              <p className="pgm-hint">
-                Add guests once the game is created, from its detail view ("Add guest").
-              </p>
-            )}
           </div>
 
           {!isEdit && sportPositions.length > 0 && (
@@ -348,6 +371,63 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {!isEdit && (
+            <div className="pgm-section">
+              <span className="pgm-label">
+                <FiUsers size={14} /> Add players (optional)
+              </span>
+              <p className="pgm-guest-sub">
+                Pre-add people who are coming — they don't need an account.
+              </p>
+              <input
+                className="pgm-input"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addGuest();
+                  }
+                }}
+                placeholder="Player name"
+              />
+              {sportPositions.length > 0 && (
+                <select
+                  className="pgm-input pgm-guest-position"
+                  value={guestPosition}
+                  onChange={(e) => setGuestPosition(e.target.value)}
+                >
+                  <option value="">Their position (optional)</option>
+                  {sportPositions.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              )}
+              <button type="button" className="pgm-add-guest" onClick={addGuest}>
+                + Add player
+              </button>
+              {guests.length > 0 && (
+                <ul className="pgm-guest-list">
+                  {guests.map((g, i) => (
+                    <li key={`${g.name}-${i}`} className="pgm-guest-row">
+                      <span className="pgm-guest-name">
+                        {g.name}
+                        {g.position && <span className="pgm-guest-pos"> · {g.position}</span>}
+                      </span>
+                      <button
+                        type="button"
+                        className="pgm-guest-remove"
+                        onClick={() => removeGuest(i)}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
 
