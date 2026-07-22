@@ -3,13 +3,13 @@
  *
  * Two concerns, kept visually and functionally separate:
  *  - "Filter" (the chevron toggle + pill row): Distance / Most Recent /
- *    Player Count / Favorites — picks which field PostsPage's
- *    `sortedVisibleGames` is ordered by; the chevron button flips
- *    ascending/descending on whichever pill is active (it never hides a
- *    game, only reorders the feed).
- *  - "Sort" (the funnel toggle): the sport/skill dropdowns (purely
- *    client-side, see PostsPage's `visibleGames`) tucked behind a toggle
- *    instead of always taking up a full row.
+ *    Player Count — picks which field PostsPage's `sortedVisibleGames` is
+ *    ordered by; the chevron button flips ascending/descending on whichever
+ *    pill is active (it never hides a game, only reorders the feed).
+ *  - "Sort" (the funnel toggle): the sport/skill dropdowns plus a "Saved
+ *    games only" toggle (purely client-side, see PostsPage's `visibleGames`)
+ *    tucked behind a toggle instead of always taking up a full row. These
+ *    genuinely hide games, unlike the pills above.
  * (Naming intentionally mirrors what's asked for, not strictly what each
  * control does underneath — see PostsPage for the actual filter-vs-sort
  * mechanics.)
@@ -28,7 +28,6 @@ const SORT_OPTIONS = [
   { value: "distance", label: "Distance" },
   { value: "recent", label: "Most Recent" },
   { value: "players", label: "Player Count" },
-  { value: "favorites", label: "Favorites" },
 ];
 
 export default function PostsFilterBar({
@@ -36,6 +35,8 @@ export default function PostsFilterBar({
   onSportFilterChange,
   skillFilter,
   onSkillFilterChange,
+  savedOnly,
+  onSavedOnlyChange,
   hasUserPosition,
   sortBy,
   onSortByChange,
@@ -43,11 +44,12 @@ export default function PostsFilterBar({
   onSortDirChange,
 }) {
   const [showSortFields, setShowSortFields] = useState(false);
-  const isFiltered = sportFilter !== "all" || skillFilter !== "all";
+  const isFiltered = sportFilter !== "all" || skillFilter !== "all" || savedOnly;
 
   function reset() {
     onSportFilterChange("all");
     onSkillFilterChange("all");
+    onSavedOnlyChange(false);
   }
 
   return (
@@ -111,6 +113,15 @@ export default function PostsFilterBar({
                     ))}
                   </select>
                 </div>
+
+                <label className="pfb-check">
+                  <input
+                    type="checkbox"
+                    checked={savedOnly}
+                    onChange={(e) => onSavedOnlyChange(e.target.checked)}
+                  />
+                  Saved games only
+                </label>
 
                 {isFiltered && (
                   <button type="button" className="pfb-reset" onClick={reset}>

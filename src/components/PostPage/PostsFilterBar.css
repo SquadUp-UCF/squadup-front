@@ -151,6 +151,28 @@
   max-width: 150px;
 }
 
+/* Saved-games filter toggle — margin-top lines it up with the select boxes
+   (which sit below their labels), same trick as .pfb-reset. */
+.pfb-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 9px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pfb-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #1b7a32;
+  cursor: pointer;
+}
+
 .pfb-reset {
   background: none;
   border: none;

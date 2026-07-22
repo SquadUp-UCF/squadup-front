@@ -135,6 +135,8 @@ function PostsPage() {
   // Posts filter bar — all client-side over the fetched `games`.
   const [sportFilter, setSportFilter] = useState("all");
   const [skillFilter, setSkillFilter] = useState("all");
+  // When on, narrows the feed + map to only games the user has saved.
+  const [savedOnly, setSavedOnly] = useState(false);
 
   // Sort — "distance"/"recent"/"players", applied on top of the filters
   // above. Distinct from the sport/skill/range filters: this only reorders
@@ -400,9 +402,10 @@ function PostsPage() {
       if (typeof g.latitude !== "number" || typeof g.longitude !== "number") return false;
       if (sportFilter !== "all" && (g.sport || "").toLowerCase() !== sportFilter) return false;
       if (!matchesSkillFilter(g, skillFilter)) return false;
+      if (savedOnly && !isSaved(g._id)) return false;
       return true;
     });
-  }, [games, sportFilter, skillFilter]);
+  }, [games, sportFilter, skillFilter, savedOnly, isSaved]);
 
   // Sort pass — layered on top of the filtered set above, never hides games.
   // "Distance" falls back to leaving order unchanged when the viewer's
@@ -415,8 +418,6 @@ function PostsPage() {
         key = milesBetween(userPosition, [g.latitude, g.longitude]);
       } else if (sortBy === "players") {
         key = activeCount(g);
-      } else if (sortBy === "favorites") {
-        key = isSaved(g._id) ? 1 : 0;
       } else {
         key = new Date(g.createdAt || g.start_time).getTime();
       }
@@ -424,7 +425,7 @@ function PostsPage() {
     });
     withKey.sort((a, b) => (a.key - b.key) * dir);
     return withKey.map((x) => x.g);
-  }, [visibleGames, sortBy, sortDir, userPosition, isSaved]);
+  }, [visibleGames, sortBy, sortDir, userPosition]);
 
   const postsPanel = (
     <PostsList
@@ -570,6 +571,8 @@ function PostsPage() {
           onSportFilterChange={setSportFilter}
           skillFilter={skillFilter}
           onSkillFilterChange={setSkillFilter}
+          savedOnly={savedOnly}
+          onSavedOnlyChange={setSavedOnly}
           hasUserPosition={Boolean(userPosition)}
           sortBy={sortBy}
           onSortByChange={setSortBy}
