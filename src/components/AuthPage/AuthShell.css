@@ -16,7 +16,7 @@
     --su-border-strong: rgba(13, 80, 40, 0.22);
 
     display: grid;
-    grid-template-columns: 1fr 480px;
+    grid-template-columns: 3fr 2fr;
     width: 100%;
     /* Lock to the viewport so the page itself never scrolls — the live board
        auto-scrolls on its own, and the form panel scrolls internally if tall. */
@@ -41,7 +41,7 @@
 
 .su-form-wrap {
     width: 100%;
-    max-width: 384px;
+    max-width: 440px;
     margin: 0 auto;
     padding: 48px 24px;
     display: flex;

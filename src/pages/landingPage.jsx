@@ -128,7 +128,7 @@ function LandingPage() {
                         Find Your Game <FiArrowRight size={17} />
                     </button>
                     <p className="lp-cta-signup">
-                        Don't have an account? <button onClick={() => navigate("/auth")}>Sign up free</button>
+                        Don't have an account? <button onClick={() => navigate("/auth", { state: { mode: "register" } })}>Sign up free</button>
                     </p>
                 </div>
 

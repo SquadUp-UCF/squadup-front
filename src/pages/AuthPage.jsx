@@ -35,7 +35,9 @@ function makeTempUsername(first, last) {
 function AuthPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [mode, setMode] = useState("login"); // "login" or "register"
+    // "login" or "register" — a caller can deep-link straight into the sign-up
+    // view (e.g. the landing page's "Sign up free") by passing router state.
+    const [mode, setMode] = useState(location.state?.mode === "register" ? "register" : "login");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
