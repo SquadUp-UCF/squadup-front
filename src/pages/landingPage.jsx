@@ -4,20 +4,24 @@ import { MdLocationOn, MdAddCircle, MdGroups, MdCalendarToday, MdEmojiEvents } f
 import { FiHeart, FiClock, FiMapPin, FiUsers, FiArrowRight, FiPlus } from "react-icons/fi";
 
 import Logo from "../components/Logo";
-import { SportIcon } from "../components/SportIcons";
-import { skillLabel } from "../utils/games";
 import "./landingPage.css";
-// Feed cards reuse the product's real game-card styles so the landing preview
-// stays in sync with what players actually see inside the app.
-import "../components/PostPage/PostsList.css";
+
+const SPORT_COLOR = {
+    tennis: "#8FBF6B",
+    basketball: "#E0A85C",
+    volleyball: "#6BC5D9",
+    soccer: "#7FBF7F",
+    "table-tennis": "#C77DD1",
+    running: "#E8833A",
+};
 
 const FEED_GAMES = [
-    { sport: "tennis", label: "Tennis", image: "/games/tennis.jpg", title: "UCF Tennis Complex", time: "Today, 6:00 PM", joined: 3, max: 8, skill: "intermediate", isNew: true },
-    { sport: "volleyball", label: "Beach Volleyball", image: "/games/volleyball.jpg", title: "Lake Claire Courts", time: "Today, 7:00 PM", joined: 9, max: 10, skill: "beginner", isNew: true },
-    { sport: "basketball", label: "Basketball", image: "/games/basketball.jpg", title: "UCF Rec Center Courts", time: "Live now", joined: 6, max: 10, skill: "intermediate", live: true },
-    { sport: "soccer", label: "Soccer", image: "/games/soccer.jpg", title: "Blanchard Soccer Fields", time: "Tomorrow, 9:00 AM", joined: 8, max: 14, isNew: true },
-    { sport: "table-tennis", label: "Table Tennis", image: "/games/table-tennis.jpg", title: "Union Table Tennis", time: "Mon, 6:00 PM", joined: 2, max: 4 },
-    { sport: "running", label: "Running", image: "/games/running.jpg", title: "Riverwalk 5K Club", time: "Thu, 6:00 AM", joined: 18, max: 40 },
+    { sport: "tennis", label: "Tennis", image: "/games/tennis.jpg", title: "UCF Tennis Complex", time: "Today, 6:00 PM", distance: "0.8 mi", players: "3 / 8 Players", isNew: true },
+    { sport: "volleyball", label: "Beach Volleyball", image: "/games/volleyball.jpg", title: "Lake Claire Courts", time: "Today, 7:00 PM", distance: "1.2 mi", players: "5 / 10 Players", isNew: true },
+    { sport: "soccer", label: "Soccer", image: "/games/soccer.jpg", title: "Blanchard Soccer Fields", time: "Tomorrow, 9:00 AM", distance: "1.2 mi", players: "8 / 14 Players", isNew: true },
+    { sport: "basketball", label: "Basketball", image: "/games/basketball.jpg", title: "UCF Rec Center Courts", time: "Tomorrow, 11:00 AM", distance: "2.1 mi", players: "4 / 10 Players", isNew: true },
+    { sport: "table-tennis", label: "Table Tennis", image: "/games/table-tennis.jpg", title: "Union Table Tennis", time: "Mon, 6:00 PM", distance: "0.3 mi", players: "2 / 4 Players", isNew: false },
+    { sport: "running", label: "Running", image: "/games/running.jpg", title: "Riverwalk 5K Club", time: "Thu, 6:00 AM", distance: "0.8 mi", players: "18 / 40 Players", isNew: false },
 ];
 
 const ABOUT_POINTS = [
@@ -35,64 +39,24 @@ const TEAM = [
     { initials: "WG", name: "Will Goodale", role: "Web Frontend Developer" },
 ];
 
-// Decorative mirror of the in-app PostsList GameCard (same pl-* markup and
-// styles) so the marquee preview reads as the real product. The card carries
-// no handlers — the whole hero marquee is non-interactive.
 function GameCard({ game }) {
-    const ratio = game.max > 0 ? Math.min(1, game.joined / game.max) : 0;
-    const fillingUp = ratio >= 0.8 && !game.live;
-    const barColor = ratio >= 0.8 ? "#E4572E" : "#2F8F4E";
-
     return (
-        <div className="pl-card">
-            <div
-                className="pl-card-header"
-                style={{ background: `center/cover no-repeat url(${game.image})` }}
-            >
-                <div className="pl-badges pl-badges-left">
-                    {game.live ? (
-                        <span className="pl-badge" style={{ background: "#FDE6E6", color: "#C81E1E" }}>
-                            <span className="game-marker-live pl-live-dot" />
-                            LIVE
-                        </span>
-                    ) : (
-                        game.isNew && (
-                            <span className="pl-badge" style={{ background: "#E4F3E8", color: "#1F6B3E" }}>✨ NEW</span>
-                        )
-                    )}
-                    {fillingUp && (
-                        <span className="pl-badge" style={{ background: "#E4572E", color: "#FFFFFF" }}>Filling up</span>
-                    )}
-                </div>
-                <div className="pl-badges pl-badges-right">
-                    <span className="pl-icon-btn"><FiHeart size={16} color="#666" /></span>
-                </div>
+        <div className="lp-card">
+            <div className="lp-card-photo" style={{ backgroundImage: `url(${game.image})` }}>
+                {game.isNew && <span className="lp-card-new">NEW</span>}
+                <span className="lp-card-heart"><FiHeart size={13} /></span>
             </div>
-
-            <div className="pl-body">
-                <span className="pl-sport-pill" style={{ background: "#E4F3E8", color: "#1F6B3E" }}>
-                    <SportIcon sport={game.sport} size={16} color="#1F6B3E" />
+            <div className="lp-card-body">
+                <span className="lp-card-sport" style={{ color: SPORT_COLOR[game.sport] }}>
+                    <span className="lp-card-sport-dot" style={{ background: SPORT_COLOR[game.sport] }} />
                     {game.label}
                 </span>
-                {game.skill && <span className="pl-skill-pill">{skillLabel(game.skill)}</span>}
-
-                <h3 className="pl-title">
-                    <FiMapPin size={18} color="#2F8F4E" className="pl-title-pin" />
-                    {game.title}
-                </h3>
-
-                <div className="pl-meta-row">
-                    <span className="pl-meta-item"><FiClock size={15} /> {game.time}</span>
-                    <span className="pl-meta-item pl-meta-count">
-                        <FiUsers size={15} /> {game.joined} / {game.max}
-                    </span>
+                <p className="lp-card-title">{game.title}</p>
+                <div className="lp-card-meta">
+                    <span className="lp-card-meta-item"><FiClock size={12} /> {game.time}</span>
+                    <span className="lp-card-meta-item"><FiMapPin size={12} /> {game.distance}</span>
+                    <span className="lp-card-meta-item lp-card-players"><FiUsers size={12} /> {game.players}</span>
                 </div>
-
-                <div className="pl-bar-track">
-                    <div className="pl-bar-fill" style={{ width: `${ratio * 100}%`, background: barColor }} />
-                </div>
-
-                <button className="pl-join pl-join--enabled" tabIndex={-1}>Join game</button>
             </div>
         </div>
     );
@@ -145,17 +109,17 @@ function LandingPage() {
                     <div className="lp-stats-row">
                         <div className="lp-stat">
                             <MdGroups className="lp-stat-icon" size={22} />
-                            <span className="lp-stat-num">2.4K</span>
+                            <span className="lp-stat-num">12.5K</span>
                             <span className="lp-stat-label">Students Connected</span>
                         </div>
                         <div className="lp-stat">
                             <MdCalendarToday className="lp-stat-icon" size={20} />
-                            <span className="lp-stat-num">60+</span>
+                            <span className="lp-stat-num">380+</span>
                             <span className="lp-stat-label">Weekly Events</span>
                         </div>
                         <div className="lp-stat">
                             <MdEmojiEvents className="lp-stat-icon" size={22} />
-                            <span className="lp-stat-num">5,280</span>
+                            <span className="lp-stat-num">48,147</span>
                             <span className="lp-stat-label">Games Created</span>
                         </div>
                     </div>
