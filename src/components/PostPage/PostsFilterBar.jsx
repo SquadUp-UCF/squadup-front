@@ -10,7 +10,8 @@
  */
 import { useState } from "react";
 import "./PostsFilterBar.css";
-import { FiFilter, FiChevronsDown, FiHeart } from "react-icons/fi";
+import { FiFilter, FiChevronsDown } from "react-icons/fi";
+import { IoHeart, IoHeartOutline } from "react-icons/io5";
 import { availableSports } from "../SportIcons";
 import { GAME_SKILL_LEVELS, skillLabel } from "../../utils/games";
 
@@ -133,7 +134,7 @@ export default function PostsFilterBar({
           aria-pressed={savedOnly}
           title="Show saved games only"
         >
-          <FiHeart size={16} />
+          {savedOnly ? <IoHeart size={16} /> : <IoHeartOutline size={16} />}
           Saved
         </button>
       </div>
