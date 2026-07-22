@@ -1,18 +1,12 @@
 /**
- * Filter/sort row shown above the posts feed.
- *
- * Two concerns, kept visually and functionally separate:
- *  - "Filter" (the chevron toggle + pill row): Distance / Most Recent /
+ * Filter/sort row shown above the posts feed. Two separate concerns:
+ *  - "Sort" (the chevron toggle + pill row): Distance / Most Recent /
  *    Player Count — picks which field PostsPage's `sortedVisibleGames` is
- *    ordered by; the chevron button flips ascending/descending on whichever
- *    pill is active (it never hides a game, only reorders the feed).
- *  - "Sort" (the funnel toggle): the sport/skill dropdowns plus a "Saved
- *    games only" toggle (purely client-side, see PostsPage's `visibleGames`)
- *    tucked behind a toggle instead of always taking up a full row. These
- *    genuinely hide games, unlike the pills above.
- * (Naming intentionally mirrors what's asked for, not strictly what each
- * control does underneath — see PostsPage for the actual filter-vs-sort
- * mechanics.)
+ *    ordered by; the chevron flips ascending/descending on the active pill.
+ *    Only reorders the feed, never hides a game.
+ *  - "Filter" (the funnel toggle): the sport/skill dropdowns plus a "Saved
+ *    games only" toggle — these genuinely exclude games, narrowing PostsPage's
+ *    `visibleGames` (which feeds both the feed and the map).
  */
 import { useState } from "react";
 import "./PostsFilterBar.css";
@@ -43,7 +37,7 @@ export default function PostsFilterBar({
   sortDir,
   onSortDirChange,
 }) {
-  const [showSortFields, setShowSortFields] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const isFiltered = sportFilter !== "all" || skillFilter !== "all" || savedOnly;
 
   function reset() {
@@ -57,7 +51,7 @@ export default function PostsFilterBar({
       <div className="pfb-toolbar">
         <button
           type="button"
-          className="pfb-toolbar-btn pfb-filter-btn"
+          className="pfb-toolbar-btn pfb-sort-btn"
           onClick={() => onSortDirChange(sortDir === "asc" ? "desc" : "asc")}
           title={sortDir === "asc" ? "Ascending" : "Descending"}
         >
@@ -66,23 +60,23 @@ export default function PostsFilterBar({
             className="pfb-sort-icon"
             style={{ transform: sortDir === "asc" ? "rotate(180deg)" : undefined }}
           />
-          Filter
+          Sort
         </button>
 
         <div className="pfb-sort-wrap">
           <button
             type="button"
             className={`pfb-toolbar-btn ${isFiltered ? "pfb-toolbar-btn--active" : ""}`}
-            onClick={() => setShowSortFields((v) => !v)}
+            onClick={() => setShowFilters((v) => !v)}
           >
             <FiFilter size={16} />
-            Sort
+            Filter
             {isFiltered && <span className="pfb-filter-dot" />}
           </button>
 
-          {showSortFields && (
+          {showFilters && (
             <>
-              <div className="pfb-panel-backdrop" onClick={() => setShowSortFields(false)} />
+              <div className="pfb-panel-backdrop" onClick={() => setShowFilters(false)} />
               <div className="pfb-panel">
                 <div className="pfb-field">
                   <label className="pfb-label" htmlFor="pfb-sport">Sport</label>

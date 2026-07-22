@@ -2,7 +2,7 @@
   margin-bottom: 16px;
 }
 
-/* ── Toolbar: "Filter" (left) / "Sort" (right) — plain icon+text buttons ── */
+/* ── Toolbar: "Sort" (left) / "Filter" (right) — plain icon+text buttons ── */
 
 .pfb-toolbar {
   display: flex;
@@ -35,7 +35,7 @@
   background: #1f6b3e;
 }
 
-.pfb-filter-btn {
+.pfb-sort-btn {
   color: #1f6b3e;
 }
 
@@ -74,7 +74,7 @@
   cursor: default;
 }
 
-/* ── Sort panel: revealed by the "Sort" toggle, as a floating dropdown ────
+/* ── Filter panel: revealed by the "Filter" toggle, as a floating dropdown ─
    anchored under the button (same pattern as the notifications bell's
    dropdown) rather than an inline block that pushes the rest of the page
    down. */
