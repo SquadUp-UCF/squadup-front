@@ -49,20 +49,6 @@ export default function PostsFilterBar({
   return (
     <div className="pfb-wrap">
       <div className="pfb-toolbar">
-        <button
-          type="button"
-          className="pfb-toolbar-btn pfb-sort-btn"
-          onClick={() => onSortDirChange(sortDir === "asc" ? "desc" : "asc")}
-          title={sortDir === "asc" ? "Ascending" : "Descending"}
-        >
-          <FiChevronsDown
-            size={16}
-            className="pfb-sort-icon"
-            style={{ transform: sortDir === "asc" ? "rotate(180deg)" : undefined }}
-          />
-          Sort
-        </button>
-
         <div className="pfb-sort-wrap">
           <button
             type="button"
@@ -126,6 +112,20 @@ export default function PostsFilterBar({
             </>
           )}
         </div>
+
+        <button
+          type="button"
+          className="pfb-toolbar-btn pfb-sort-btn"
+          onClick={() => onSortDirChange(sortDir === "asc" ? "desc" : "asc")}
+          title={sortDir === "asc" ? "Ascending" : "Descending"}
+        >
+          <FiChevronsDown
+            size={16}
+            className="pfb-sort-icon"
+            style={{ transform: sortDir === "asc" ? "rotate(180deg)" : undefined }}
+          />
+          Sort
+        </button>
       </div>
 
       <div className="pfb-pills">

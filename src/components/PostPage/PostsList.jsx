@@ -4,7 +4,7 @@
  * props so the parent (PostsPage) owns the data and list + map stay in sync.
  */
 import "./PostsList.css";
-import { FiMapPin, FiClock, FiUsers, FiHeart, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiMapPin, FiClock, FiUsers, FiHeart, FiEdit2, FiTrash2, FiTarget } from "react-icons/fi";
 import { SportIcon } from "../SportIcons";
 import { useSavedGames } from "../../contexts/SavedGamesContext";
 import { statusMeta, formatWhen, activeCount, isLive, hasStarted, bannerUrl, skillLabel } from "../../utils/games";
@@ -111,12 +111,16 @@ function GameCard({ game, currentUserId, onJoin, joiningId, onLeave, leavingId, 
           <span className="pl-meta-item">
             <FiClock size={15} /> {formatWhen(game.start_time)}
           </span>
-          <span className="pl-meta-item pl-meta-count">
-            <FiUsers size={15} /> {joined} / {game.max_players}
+          <div className="pl-meta-counts">
             {game.min_players > 0 && (
-              <span className="pl-min-label">min {game.min_players}</span>
+              <span className="pl-meta-item pl-min-label">
+                <FiTarget size={13} /> Min {game.min_players}
+              </span>
             )}
-          </span>
+            <span className="pl-meta-item pl-meta-count">
+              <FiUsers size={15} /> {joined} / {game.max_players}
+            </span>
+          </div>
         </div>
 
         {/* Join-progress bar — the tick marks where min_players falls, so
