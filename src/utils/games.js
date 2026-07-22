@@ -87,8 +87,15 @@ export function resolvePhotoUrl(photoUrl) {
  * means the same thing everywhere: show the sport-icon placeholder instead
  * of trying to render a photo.
  */
-export function hasCustomBanner(game) {
-  return Boolean(game.photo_url) && !game.photo_url.startsWith("/sports/");
+/**
+ * Resolved banner image URL for a game — either the host's custom upload or
+ * the backend's default `/sports/<sport>.svg` banner (a 1200×400 sport
+ * illustration). Returns null only when the game has no photo at all, in which
+ * case callers fall back to the gradient + sport icon. The mobile app renders
+ * these default sport banners, so the web feed/map/detail views do too.
+ */
+export function bannerUrl(game) {
+  return game?.photo_url ? resolvePhotoUrl(game.photo_url) : null;
 }
 
 // Mirrors squadup-api's `GameSkillLevel` enum (games/schemas/game.schema.ts) —

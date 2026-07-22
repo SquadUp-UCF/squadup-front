@@ -10,8 +10,7 @@ import {
   activeCount,
   isLive,
   hasStarted,
-  resolvePhotoUrl,
-  hasCustomBanner,
+  bannerUrl,
   UCF_CENTER,
   getBoundsForRadius,
   formatRadius,
@@ -73,6 +72,7 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId, onLeave, leavin
     game.status !== 'completed' && game.status !== 'cancelled';
   const joining = joiningId === game._id;
   const leaving = leavingId === game._id;
+  const banner = bannerUrl(game);
 
   return (
     <div className="map-popup-card">
@@ -80,9 +80,9 @@ function GamePopupCard({ game, currentUserId, onJoin, joiningId, onLeave, leavin
           feed card). Status/live badge floats top-left. */}
       <div
         className="map-popup-header"
-        style={hasCustomBanner(game) ? { backgroundImage: `url(${resolvePhotoUrl(game.photo_url)})` } : undefined}
+        style={banner ? { backgroundImage: `url(${banner})` } : undefined}
       >
-        {!hasCustomBanner(game) && <SportIcon sport={game.sport} size={38} color="rgba(255,255,255,0.92)" />}
+        {!banner && <SportIcon sport={game.sport} size={38} color="rgba(255,255,255,0.92)" />}
         <div className="map-popup-badge-wrap">
           {live ? (
             <span className="map-popup-live-badge">

@@ -23,7 +23,7 @@ import "./GameDetailModal.css";
 import { SportIcon } from "../SportIcons";
 import PlayerProfileModal from "./PlayerProfileModal";
 import { positionsForSport } from "../../utils/positions";
-import { statusMeta, formatWhen, activeCount, isLive, hasStarted, resolvePhotoUrl, hasCustomBanner } from "../../utils/games";
+import { statusMeta, formatWhen, activeCount, isLive, hasStarted, resolvePhotoUrl, bannerUrl } from "../../utils/games";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -248,14 +248,16 @@ export default function GameDetailModal({
     }
   }
 
+  const banner = bannerUrl(game);
+
   return (
     <div onClick={onClose} className="pgm-overlay">
       <div onClick={(e) => e.stopPropagation()} className="pgm-modal gdm-modal">
         <div
           className="gdm-hero"
-          style={hasCustomBanner(game) ? { backgroundImage: `url(${resolvePhotoUrl(game.photo_url)})` } : undefined}
+          style={banner ? { backgroundImage: `url(${banner})` } : undefined}
         >
-          {!hasCustomBanner(game) && (
+          {!banner && (
             <span className="gdm-hero-placeholder">
               <SportIcon sport={game.sport} size={56} color="rgba(255,255,255,0.55)" />
             </span>
