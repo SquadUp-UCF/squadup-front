@@ -693,7 +693,7 @@ function PostsPage() {
         aria-label="Create game"
         className="pp-fab"
       >
-        <FiPlus size={20} />
+        <FiPlus size={24} />
         Create game
       </button>
     </div>

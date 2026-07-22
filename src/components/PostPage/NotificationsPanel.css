@@ -1,18 +1,17 @@
 .pp-notif-panel {
   position: absolute;
   top: calc(100% + 10px);
-  /* Centered under the bell rather than anchored to either edge — unlike the
-     avatar menu (which sits at the far-right edge, so right:0 works), the
-     bell sits mid-nav, so anchoring to either side alone can push a 340px
-     panel past the opposite edge of the viewport on narrow screens. */
-  left: 50%;
-  transform: translateX(-50%);
+  /* Anchor the panel's right edge to the bell so it opens leftward and stays
+     on-screen. The bell sits in the right portion of the nav, so centering it
+     (left:50% + translateX) pushed the panel's right half off the viewport —
+     right:0 keeps it inside, same as the avatar menu beside it. */
+  right: 0;
   z-index: 2001;
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  width: 340px;
-  max-width: calc(100vw - 32px);
+  width: 400px;
+  max-width: calc(100vw - 24px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -47,7 +46,7 @@
 }
 
 .pp-notif-list {
-  max-height: 420px;
+  max-height: 480px;
   overflow-y: auto;
 }
 
