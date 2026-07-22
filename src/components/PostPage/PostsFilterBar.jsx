@@ -24,11 +24,16 @@ const SORT_OPTIONS = [
   { value: "players", label: "Player Count" },
 ];
 
+// Add/remove a value from a multi-select filter array (OR semantics).
+function toggleValue(list, value) {
+  return list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
+}
+
 export default function PostsFilterBar({
-  sportFilter,
-  onSportFilterChange,
-  skillFilter,
-  onSkillFilterChange,
+  sportFilters,
+  onSportFiltersChange,
+  skillFilters,
+  onSkillFiltersChange,
   savedOnly,
   onSavedOnlyChange,
   hasUserPosition,
@@ -38,11 +43,11 @@ export default function PostsFilterBar({
   onSortDirChange,
 }) {
   const [showFilters, setShowFilters] = useState(false);
-  const isFiltered = sportFilter !== "all" || skillFilter !== "all" || savedOnly;
+  const isFiltered = sportFilters.length > 0 || skillFilters.length > 0 || savedOnly;
 
   function reset() {
-    onSportFilterChange("all");
-    onSkillFilterChange("all");
+    onSportFiltersChange([]);
+    onSkillFiltersChange([]);
     onSavedOnlyChange(false);
   }
 
@@ -65,33 +70,35 @@ export default function PostsFilterBar({
               <div className="pfb-panel-backdrop" onClick={() => setShowFilters(false)} />
               <div className="pfb-panel">
                 <div className="pfb-field">
-                  <label className="pfb-label" htmlFor="pfb-sport">Sport</label>
-                  <select
-                    id="pfb-sport"
-                    className="pfb-select"
-                    value={sportFilter}
-                    onChange={(e) => onSportFilterChange(e.target.value)}
-                  >
-                    <option value="all">All sports</option>
+                  <span className="pfb-label">Sport</span>
+                  <div className="pfb-chips">
                     {availableSports.map((s) => (
-                      <option key={s} value={s}>{sportLabel(s)}</option>
+                      <button
+                        key={s}
+                        type="button"
+                        className={`pfb-chip ${sportFilters.includes(s) ? "pfb-chip--active" : ""}`}
+                        onClick={() => onSportFiltersChange(toggleValue(sportFilters, s))}
+                      >
+                        {sportLabel(s)}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div className="pfb-field">
-                  <label className="pfb-label" htmlFor="pfb-skill">Skill level</label>
-                  <select
-                    id="pfb-skill"
-                    className="pfb-select"
-                    value={skillFilter}
-                    onChange={(e) => onSkillFilterChange(e.target.value)}
-                  >
-                    <option value="all">All levels</option>
+                  <span className="pfb-label">Skill level</span>
+                  <div className="pfb-chips">
                     {GAME_SKILL_LEVELS.map((level) => (
-                      <option key={level} value={level}>{skillLabel(level)}</option>
+                      <button
+                        key={level}
+                        type="button"
+                        className={`pfb-chip ${skillFilters.includes(level) ? "pfb-chip--active" : ""}`}
+                        onClick={() => onSkillFiltersChange(toggleValue(skillFilters, level))}
+                      >
+                        {skillLabel(level)}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <label className="pfb-check">

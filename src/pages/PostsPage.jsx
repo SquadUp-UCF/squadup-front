@@ -133,8 +133,8 @@ function PostsPage() {
   const [radiusMiles, setRadiusMiles] = useState(DEFAULT_RADIUS);
 
   // Posts filter bar — all client-side over the fetched `games`.
-  const [sportFilter, setSportFilter] = useState("all");
-  const [skillFilter, setSkillFilter] = useState("all");
+  const [sportFilters, setSportFilters] = useState([]); // [] = all sports; multiple = OR
+  const [skillFilters, setSkillFilters] = useState([]); // [] = any skill; multiple = OR
   // When on, narrows the feed + map to only games the user has saved.
   const [savedOnly, setSavedOnly] = useState(false);
 
@@ -400,12 +400,14 @@ function PostsPage() {
   const visibleGames = useMemo(() => {
     return games.filter((g) => {
       if (typeof g.latitude !== "number" || typeof g.longitude !== "number") return false;
-      if (sportFilter !== "all" && (g.sport || "").toLowerCase() !== sportFilter) return false;
-      if (!matchesSkillFilter(g, skillFilter)) return false;
+      // Multiple sports/skills read as OR: keep a game if it matches any picked
+      // sport (and, independently, any picked skill). Empty = no constraint.
+      if (sportFilters.length && !sportFilters.includes((g.sport || "").toLowerCase())) return false;
+      if (skillFilters.length && !skillFilters.some((f) => matchesSkillFilter(g, f))) return false;
       if (savedOnly && !isSaved(g._id)) return false;
       return true;
     });
-  }, [games, sportFilter, skillFilter, savedOnly, isSaved]);
+  }, [games, sportFilters, skillFilters, savedOnly, isSaved]);
 
   // Sort pass — layered on top of the filtered set above, never hides games.
   // "Distance" falls back to leaving order unchanged when the viewer's
@@ -560,10 +562,10 @@ function PostsPage() {
       {/* Filters — apply to both the feed and the map, since they share visibleGames */}
       <div className="pp-filter-wrap">
         <PostsFilterBar
-          sportFilter={sportFilter}
-          onSportFilterChange={setSportFilter}
-          skillFilter={skillFilter}
-          onSkillFilterChange={setSkillFilter}
+          sportFilters={sportFilters}
+          onSportFiltersChange={setSportFilters}
+          skillFilters={skillFilters}
+          onSkillFiltersChange={setSkillFilters}
           savedOnly={savedOnly}
           onSavedOnlyChange={setSavedOnly}
           hasUserPosition={Boolean(userPosition)}

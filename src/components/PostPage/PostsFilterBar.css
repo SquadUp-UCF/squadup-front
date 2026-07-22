@@ -122,27 +122,32 @@
   text-transform: uppercase;
 }
 
-.pfb-select {
-  appearance: none;
-  -webkit-appearance: none;
-  background: #FFFFFF;
-  border: 1px solid #D6E4D6;
-  border-radius: 12px;
-  padding: 9px 32px 9px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1A1A1A;
-  cursor: pointer;
-  min-width: 150px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%231F6B3E'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
+/* Multi-select chips: each sport/skill toggles on/off; several picks read as
+   OR. Constrained width so a full sport list wraps into rows inside the panel
+   rather than stretching it across the screen. */
+.pfb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 260px;
 }
 
-.pfb-select:disabled {
-  cursor: default;
-  opacity: 0.55;
+.pfb-chip {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #e4f3e8;
+  color: #1f6b3e;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pfb-chip--active {
+  background: #1b7a32;
+  color: #ffffff;
 }
 
 .pfb-hint {
@@ -189,28 +194,19 @@
   text-decoration: underline;
 }
 
-/* Matches the app's own narrow-layout breakpoint (PostsPage's
-   NARROW_BREAKPOINT) — below this, three 150px-min selects plus the reset
-   button no longer reliably fit on one line. */
-@media (max-width: 899px) {
-  .pfb-select {
-    min-width: 120px;
-    flex: 1 1 120px;
-  }
-}
-
 @media (max-width: 480px) {
   .pfb-panel {
     gap: 10px;
   }
 
-  .pfb-select {
-    min-width: 0;
-    flex: 1;
+  /* Each chip group takes the full panel width so the sport list has room to
+     wrap instead of being squeezed into a half-width column. */
+  .pfb-field {
+    flex: 1 1 100%;
   }
 
-  .pfb-field {
-    flex: 1 1 calc(50% - 10px);
+  .pfb-chips {
+    max-width: 100%;
   }
 
   .pfb-hint {
