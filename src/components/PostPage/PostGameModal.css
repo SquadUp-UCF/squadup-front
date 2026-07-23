@@ -64,6 +64,12 @@
   font-size: 14px;
   font-family: inherit;
   box-sizing: border-box;
+  /* Without these, a form control with no explicit background/color falls
+     back to the browser's native styling — which is dark on a system set to
+     dark mode, even though this app is a light-themed UI. */
+  background: #ffffff;
+  color: #1a1a1a;
+  color-scheme: light;
 }
 
 .pgm-custom-sport {
@@ -344,6 +350,53 @@
   text-align: center;
   font-weight: 700;
   font-size: 16px;
+}
+
+/* Custom minus/plus buttons replace the browser's native number-input
+   spinner arrows — hide those so they don't show up doubled. */
+.pgm-stepper-input::-webkit-outer-spin-button,
+.pgm-stepper-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.pgm-stepper-input {
+  -moz-appearance: textfield;
+}
+
+.pgm-stepper {
+  display: flex;
+  align-items: stretch;
+}
+.pgm-stepper .pgm-stepper-input {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  flex: 1;
+  min-width: 0;
+}
+.pgm-stepper-btn {
+  flex: 0 0 auto;
+  width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaf4e4;
+  border: 1px solid #d6e4d6;
+  color: #1f6b3e;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.pgm-stepper-btn:first-child {
+  border-radius: 10px 0 0 10px;
+}
+.pgm-stepper-btn:last-child {
+  border-radius: 0 10px 10px 0;
+}
+.pgm-stepper-btn:hover {
+  background: #d9ecd0;
+}
+.pgm-stepper-btn:active {
+  background: #c8e3ba;
 }
 
 .pgm-player-field-input:disabled {

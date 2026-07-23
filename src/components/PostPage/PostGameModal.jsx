@@ -13,7 +13,7 @@
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FiMapPin, FiClock, FiUsers } from "react-icons/fi";
+import { FiMapPin, FiClock, FiUsers, FiMinus, FiPlus } from "react-icons/fi";
 import "./PostGameModal.css";
 import LocationPicker from "./LocationPicker";
 import { SportIcon, availableSports } from "../SportIcons";
@@ -70,6 +70,15 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
   );
   const [minPlayers, setMinPlayers] = useState(game?.min_players ?? 2);
   const [maxPlayers, setMaxPlayers] = useState(game?.max_players ?? 10);
+
+  // Steps a player-count field by ±1, staying at 1 or above — the field's
+  // own value can be blank mid-edit, so fall back to 0 first.
+  function stepPlayers(setter, delta) {
+    setter((prev) => {
+      const next = (Number(prev) || 0) + delta;
+      return next < 1 ? 1 : next;
+    });
+  }
   const [skillLevel, setSkillLevel] = useState(game?.skill_level || "all");
   // The host's own position — only offered at creation (once a game exists,
   // any joined player including the host sets/changes their own position
@@ -335,23 +344,59 @@ export default function PostGameModal({ onClose, onSaved, game = null }) {
             <div className="pgm-players-row">
               <div className="pgm-player-field">
                 <label className="pgm-player-field-label">Min players</label>
-                <input
-                  type="number"
-                  min={1}
-                  className="pgm-input pgm-player-field-input"
-                  value={minPlayers}
-                  onChange={(e) => setMinPlayers(e.target.value)}
-                />
+                <div className="pgm-stepper">
+                  <button
+                    type="button"
+                    className="pgm-stepper-btn"
+                    aria-label="Decrease min players"
+                    onClick={() => stepPlayers(setMinPlayers, -1)}
+                  >
+                    <FiMinus size={14} />
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    className="pgm-input pgm-player-field-input pgm-stepper-input"
+                    value={minPlayers}
+                    onChange={(e) => setMinPlayers(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="pgm-stepper-btn"
+                    aria-label="Increase min players"
+                    onClick={() => stepPlayers(setMinPlayers, 1)}
+                  >
+                    <FiPlus size={14} />
+                  </button>
+                </div>
               </div>
               <div className="pgm-player-field">
                 <label className="pgm-player-field-label">Max players</label>
-                <input
-                  type="number"
-                  min={1}
-                  className="pgm-input pgm-player-field-input"
-                  value={maxPlayers}
-                  onChange={(e) => setMaxPlayers(e.target.value)}
-                />
+                <div className="pgm-stepper">
+                  <button
+                    type="button"
+                    className="pgm-stepper-btn"
+                    aria-label="Decrease max players"
+                    onClick={() => stepPlayers(setMaxPlayers, -1)}
+                  >
+                    <FiMinus size={14} />
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    className="pgm-input pgm-player-field-input pgm-stepper-input"
+                    value={maxPlayers}
+                    onChange={(e) => setMaxPlayers(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="pgm-stepper-btn"
+                    aria-label="Increase max players"
+                    onClick={() => stepPlayers(setMaxPlayers, 1)}
+                  >
+                    <FiPlus size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
